@@ -15,11 +15,17 @@ export const languages = Object.keys(langs).map((langPath) => {
   return { code: langCode, lang: langName }
 })
 
-// 🚀 始终默认中文
-const defaultLang = "zh-CN"
+// determine browser's default language
+const userLang = navigator.language.toLowerCase()
+const defaultLang =
+  languages.find((lang) => lang.code.toLowerCase() === userLang)?.code ||
+  languages.find(
+    (lang) => lang.code.toLowerCase().split("-")[0] === userLang.split("-")[0],
+  )?.code ||
+  "zh-CN"
 
-// Get initial language from localStorage or fallback to defaultLang
-export let initialLang = localStorage.getItem("lang") ?? defaultLang
+// Set initial language directly to defaultLang (remove localStorage check)
+export let initialLang = defaultLang
 
 if (!languages.some((lang) => lang.code === initialLang)) {
   initialLang = defaultLang
