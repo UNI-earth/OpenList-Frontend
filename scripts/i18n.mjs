@@ -1,11 +1,17 @@
 import fs from "fs"
 import path from "path"
 
-const root = "./src/lang"
-const entry = "entry.ts"
-const langs = fs.readdirSync(root)
-langs
-  .filter((lang) => lang !== "en")
-  .forEach((lang) => {
-    fs.copyFileSync(path.join(root, "en", entry), path.join(root, lang, entry))
-  })
+import en from "./lang/en/entry";
+import zhCN from "./lang/zh-CN/entry";
+
+const langs = {
+  en,
+  "zh-CN": zhCN,
+};
+
+// 默认语言：如果有 zh-CN 就用 zh-CN，否则用 en
+export const defaultLang = langs["zh-CN"] ? "zh-CN" : "en";
+
+export const getLang = (code: string) => {
+  return langs[code] || langs[defaultLang];
+};
