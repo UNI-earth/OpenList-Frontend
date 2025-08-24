@@ -408,6 +408,15 @@
     "thumbnail": "Thumbnail",
     "thumbnail-tips": "enable thumbnail which pre-generated under .thumbnails folder"
   },
+  "Degoo": {
+    "password": "Password",
+    "password-tips": "Your Degoo account password",
+    "root_folder_id": "Root folder id",
+    "token": "Token",
+    "token-tips": "Access token for Degoo API, will be obtained automatically if not provided",
+    "username": "Username",
+    "username-tips": "Your Degoo account email"
+  },
   "Doge": {
     "access_key_id": "Access key id",
     "add_filename_to_disposition": "Add filename to disposition",
@@ -1225,6 +1234,7 @@
     "Cloudreve": {},
     "Cloudreve V4": {},
     "Crypt": {},
+    "Degoo": {},
     "Doge": {},
     "Doubao": {},
     "DoubaoShare": {},
@@ -1306,6 +1316,7 @@
     "Cloudreve": "Cloudreve",
     "Cloudreve V4": "Cloudreve V4",
     "Crypt": "Crypt",
+    "Degoo": "Degoo",
     "Doge": "Doge",
     "Doubao": "Doubao",
     "DoubaoShare": "DoubaoShare",
