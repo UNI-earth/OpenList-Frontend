@@ -918,6 +918,18 @@
     "root_folder_id": "Root folder id",
     "use_s3_upload_method": "Use s3 upload method"
   },
+  "Teldrive": {
+    "chunk_size": "Chunk size",
+    "chunk_size-tips": "Chunk size in MiB",
+    "cookie": "Cookie",
+    "cookie-tips": "access_token=xxx",
+    "root_folder_path": "Root folder path",
+    "upload_concurrency": "Upload concurrency",
+    "upload_concurrency-tips": "Concurrency upload requests",
+    "url": "Url",
+    "use_share_link": "Use share link",
+    "use_share_link-tips": "Create share link when getting link to support 302. If disabled, you need to enable web proxy."
+  },
   "Terabox": {
     "cookie": "Cookie",
     "download_api": "Download api",
@@ -1276,6 +1288,7 @@
     "Seafile": {},
     "Strm": {},
     "Teambition": {},
+    "Teldrive": {},
     "Terabox": {},
     "Thunder": {},
     "ThunderBrowser": {},
@@ -1356,6 +1369,7 @@
     "Seafile": "Seafile",
     "Strm": "Strm",
     "Teambition": "Teambition",
+    "Teldrive": "Teldrive",
     "Terabox": "Terabox",
     "Thunder": "Thunder",
     "ThunderBrowser": "ThunderBrowser",
