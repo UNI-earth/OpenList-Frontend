@@ -409,11 +409,13 @@
     "thumbnail-tips": "enable thumbnail which pre-generated under .thumbnails folder"
   },
   "Degoo": {
+    "access_token": "Access token",
+    "access_token-tips": "Access token for Degoo API, obtained automatically",
     "password": "Password",
     "password-tips": "Your Degoo account password",
+    "refresh_token": "Refresh token",
+    "refresh_token-tips": "Refresh token for automatic token renewal, obtained automatically",
     "root_folder_id": "Root folder id",
-    "token": "Token",
-    "token-tips": "Access token for Degoo API, will be obtained automatically if not provided",
     "username": "Username",
     "username-tips": "Your Degoo account email"
   },
