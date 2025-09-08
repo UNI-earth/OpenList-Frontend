@@ -12,7 +12,7 @@ import {
   Textarea,
 } from "@hope-ui/solid"
 import { Match, Show, Switch } from "solid-js"
-import { SelectOptions } from "~/components"
+import { SelectOptions, MultiPathInput } from "~/components"
 import { TbRefresh } from "solid-icons/tb"
 
 export type ItemProps = {
@@ -44,6 +44,11 @@ export type ItemProps = {
       onChange?: (value: string) => void
       value: string
       random?: () => string
+    }
+  | {
+      type: Type.MultiPath
+      onChange?: (value: string) => void
+      value: string
     }
   | {
       type: Type.Select
@@ -146,6 +151,19 @@ const Item = (props: ItemProps) => {
                 ? (e) => props.onChange?.(e.currentTarget.value)
                 : undefined
             }
+          />
+        </Match>
+        <Match when={props.type === Type.MultiPath}>
+          <MultiPathInput
+            id={props.name}
+            value={props.value as string}
+            valid={props.valid}
+            readOnly={props.readonly}
+            onChange={(value) => {
+              if (props.type === Type.MultiPath) {
+                props.onChange?.(value)
+              }
+            }}
           />
         </Match>
         <Match when={props.type === Type.Select}>

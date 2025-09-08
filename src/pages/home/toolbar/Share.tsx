@@ -36,7 +36,7 @@ import {
 import { createStore } from "solid-js/store"
 import { getSetting, me, selectedObjs } from "~/store"
 import { TbRefresh } from "solid-icons/tb"
-import { SelectOptions } from "~/components"
+import { SelectOptions, MultiPathInput } from "~/components"
 
 export const Share = () => {
   const t = useT()
