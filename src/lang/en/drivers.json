@@ -335,6 +335,15 @@
     "upload_thread": "Upload thread",
     "upload_thread-tips": "1\u003c=thread\u003c=32"
   },
+  "CNB Releases": {
+    "default_branch": "Default branch",
+    "default_branch-tips": "Default branch for new releases",
+    "repo": "Repo",
+    "root_folder_path": "Root folder path",
+    "token": "Token",
+    "use_tag_name": "Use tag name",
+    "use_tag_name-tips": "Use tag name instead of release name"
+  },
   "ChaoXingGroupDrive": {
     "bbsid": "Bbsid",
     "cookie": "Cookie",
@@ -1244,6 +1253,7 @@
     "Azure Blob Storage": {},
     "BaiduNetdisk": {},
     "BaiduPhoto": {},
+    "CNB Releases": {},
     "ChaoXingGroupDrive": {},
     "Cloudreve": {},
     "Cloudreve V4": {},
@@ -1327,6 +1337,7 @@
     "Azure Blob Storage": "Azure Blob Storage",
     "BaiduNetdisk": "BaiduNetdisk",
     "BaiduPhoto": "BaiduPhoto",
+    "CNB Releases": "CNB Releases",
     "ChaoXingGroupDrive": "ChaoXingGroupDrive",
     "Cloudreve": "Cloudreve",
     "Cloudreve V4": "Cloudreve V4",
