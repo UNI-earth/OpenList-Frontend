@@ -1,4 +1,11 @@
-import { HStack, Icon, Text } from "@hope-ui/solid"
+import {
+  HStack,
+  Icon,
+  Progress,
+  ProgressIndicator,
+  ProgressLabel,
+  Text,
+} from "@hope-ui/solid"
 import { Motion } from "solid-motionone"
 import { useContextMenu } from "solid-contextmenu"
 import { batch, Show } from "solid-js"
@@ -11,8 +18,17 @@ import {
   OrderBy,
   selectIndex,
 } from "~/store"
-import { ObjType, StoreObj } from "~/types"
-import { bus, formatDate, getFileSize, hoverColor } from "~/utils"
+import { MountDetails, ObjType, StoreObj } from "~/types"
+import {
+  bus,
+  formatDate,
+  getFileSize,
+  hoverColor,
+  showDiskUsage,
+  usedPercentage,
+  toReadableUsage,
+  nearlyFull,
+} from "~/utils"
 import { getIconByObj } from "~/utils/icon"
 import { ItemCheckbox, useSelectWithMouse } from "./helper"
 
@@ -145,9 +161,37 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
             {props.obj.name}
           </Text>
         </HStack>
-        <Text class="size" w={cols[1].w} textAlign={cols[1].textAlign as any}>
-          {getFileSize(props.obj.size)}
-        </Text>
+        <Show
+          fallback={
+            <Text
+              class="size"
+              w={cols[1].w}
+              textAlign={cols[1].textAlign as any}
+            >
+              {getFileSize(props.obj.size)}
+            </Text>
+          }
+          when={showDiskUsage(props.obj.mount_details)}
+        >
+          <Progress
+            w={cols[1].w}
+            class="disk-usage-percentage"
+            trackColor="$info3"
+            rounded="$full"
+            size="md"
+            value={usedPercentage(props.obj.mount_details!)}
+          >
+            <ProgressIndicator
+              color={
+                nearlyFull(props.obj.mount_details!) ? "$danger6" : "$info6"
+              }
+              rounded="$md"
+            />
+            <ProgressLabel class="disk-usage-text">
+              {toReadableUsage(props.obj.mount_details!)}
+            </ProgressLabel>
+          </Progress>
+        </Show>
         <Text
           class="modified"
           display={{ "@initial": "none", "@md": "inline" }}

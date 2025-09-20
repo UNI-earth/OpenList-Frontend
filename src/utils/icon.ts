@@ -12,6 +12,7 @@ import {
   BsWindows,
   BsFileEarmarkZipFill,
   BsMarkdownFill,
+  BsDeviceHddFill,
 } from "solid-icons/bs"
 import {
   FaSolidDatabase,
@@ -20,7 +21,7 @@ import {
   FaSolidLink,
 } from "solid-icons/fa"
 import { IoFolder } from "solid-icons/io"
-import { ImAndroid } from "solid-icons/im"
+import { ImAndroid, ImGoogleDrive, ImOnedrive } from "solid-icons/im"
 import { Obj, ObjType } from "~/types"
 import { ext } from "./path"
 import {
@@ -29,6 +30,8 @@ import {
 } from "~/components"
 import { SiAsciinema } from "solid-icons/si"
 import { isArchive } from "~/store/archive"
+import { AiFillGithub } from "solid-icons/ai"
+import { RiLogosNeteaseCloudMusicFill } from "solid-icons/ri"
 
 const iconMap = {
   "dmg,ipa,plist,tipa": BsApple,
@@ -89,6 +92,31 @@ export const getIconByTypeAndName = (type: number, name: string) => {
   }
 }
 
-export const getIconByObj = (obj: Pick<Obj, "type" | "name">) => {
+export const getIconByDriver = (driverName: string) => {
+  switch (driverName) {
+    case "Local":
+      return BsDeviceHddFill
+    case "GitHub API":
+    case "GitHub Releases":
+      return AiFillGithub
+    case "GoogleDrive":
+      return ImGoogleDrive
+    case "NeteaseMusic":
+      return RiLogosNeteaseCloudMusicFill
+    case "Onedrive":
+    case "OnedriveApp":
+    case "Onedrive Sharelink":
+      return ImOnedrive
+    default:
+      return IoFolder
+  }
+}
+
+export const getIconByObj = (
+  obj: Pick<Obj, "type" | "name" | "mount_details">,
+) => {
+  if (obj.mount_details) {
+    return getIconByDriver(obj.mount_details.driver_name)
+  }
   return getIconByTypeAndName(obj.type, obj.name)
 }
