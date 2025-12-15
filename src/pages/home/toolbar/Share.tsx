@@ -56,13 +56,12 @@ export const Share = () => {
         })
         setShare({
           files: paths,
-          expires: null,
+		  // ✅ 默认过期时间：2 天
+          // 这里直接生成真正提交给后端的时间
+          expires: getExpireDate("2d").toISOString(),
           pwd: "",
           max_accessed: 0,
-          order_by: OrderBy.None,
-          order_direction: OrderDirection.None,
           extract_folder: ExtractFolder.None,
-          remark: "",
           readme: "",
           header: "",
         } as ShareType)
@@ -76,8 +75,6 @@ export const Share = () => {
   })
   const { isOpen, onOpen, onClose } = createDisclosure()
   const { copy } = useUtil()
-  const [expireString, setExpireString] = createSignal("")
-  const [expireValid, setExpireValid] = createSignal(true)
   const [share, setShare] = createStore<ShareType>({} as ShareType)
   const [okLoading, ok] = useFetch((): PResp<ShareInfo> => {
     return r.post(`/share/create`, share)
@@ -123,14 +120,6 @@ export const Share = () => {
           <Match when={link() === ""}>
             <ModalBody>
               <VStack spacing="$1" alignItems="flex-start">
-                <Text size="sm">{t("shares.remark")}</Text>
-                <Textarea
-                  size="sm"
-                  value={share.remark}
-                  onInput={(e) => {
-                    setShare("remark", e.currentTarget.value)
-                  }}
-                />
                 <Text size="sm">{t("shares.extract_folder")}</Text>
                 <Select
                   size="sm"
@@ -148,46 +137,6 @@ export const Share = () => {
                       {
                         key: ExtractFolder.Back,
                         label: t("shares.extract_folders.back"),
-                      },
-                    ]}
-                  />
-                </Select>
-                <Text size="sm">{t("shares.order_by")}</Text>
-                <Select
-                  size="sm"
-                  value={share.order_by}
-                  onChange={(e) => {
-                    setShare("order_by", e)
-                  }}
-                >
-                  <SelectOptions
-                    options={[
-                      { key: OrderBy.Name, label: t("shares.order_bys.name") },
-                      { key: OrderBy.Size, label: t("shares.order_bys.size") },
-                      {
-                        key: OrderBy.Modified,
-                        label: t("shares.order_bys.modified"),
-                      },
-                    ]}
-                  />
-                </Select>
-                <Text size="sm">{t("shares.order_direction")}</Text>
-                <Select
-                  size="sm"
-                  value={share.order_direction}
-                  onChange={(e) => {
-                    setShare("order_direction", e)
-                  }}
-                >
-                  <SelectOptions
-                    options={[
-                      {
-                        key: OrderDirection.Asc,
-                        label: t("shares.order_directions.asc"),
-                      },
-                      {
-                        key: OrderDirection.Desc,
-                        label: t("shares.order_directions.desc"),
                       },
                     ]}
                   />
@@ -221,35 +170,29 @@ export const Share = () => {
                   }}
                 />
                 <Text size="sm">{t("shares.expires")}</Text>
-                <Input
+                <Select
                   size="sm"
-                  invalid={!expireValid()}
-                  value={expireString()}
-                  placeholder="yyyy-MM-dd HH:mm:ss or +1w1d1H1m1s1ms"
-                  onInput={(e) => {
-                    setExpireString(e.currentTarget.value)
-                    if (e.currentTarget.value === "") {
-                      setExpireValid(true)
-                      setShare("expires", null)
-                      return
-                    }
-                    const date = getExpireDate(e.currentTarget.value)
-                    if (isNaN(date.getTime())) {
-                      setExpireValid(false)
+                  value="2d" // ✅ 默认显示 2 天
+                  onChange={(e) => {
+                    const v = e as string
+                
+                    if (v === "never") {
+                      setShare("expires", null) // ✅ 永不过期
                     } else {
-                      setExpireValid(true)
-                      setShare("expires", date.toISOString())
+                      setShare("expires", getExpireDate(v).toISOString())
                     }
                   }}
-                />
-                <Text size="sm">{t("shares.readme")}</Text>
-                <Textarea
-                  size="sm"
-                  value={share.readme}
-                  onInput={(e) => {
-                    setShare("readme", e.currentTarget.value)
-                  }}
-                />
+                >
+                  <SelectOptions
+                    options={[
+                      { key: "2h", label: "2 小时" },
+                      { key: "2d", label: "2 天" },
+                      { key: "1w", label: "1 周" },
+                      { key: "1M", label: "1 月" },
+                      { key: "never", label: "永不过期" },
+                    ]}
+                  />
+                </Select>
                 <Text size="sm">{t("shares.header")}</Text>
                 <Textarea
                   size="sm"
