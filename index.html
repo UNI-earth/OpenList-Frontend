@@ -36,7 +36,7 @@
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
         background-color: rgba(200, 200, 200, 0.3) !important;
-        box-shadow: none !important; /* 去掉阴影，消除横线 */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       }
 
       /* 主列表夜间模式透明 */
@@ -44,7 +44,7 @@
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
         background-color: rgba(0, 0, 0, 0.3) !important;
-        box-shadow: none !important; /* 去掉阴影 */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       }
 
       /* readme 白天模式透明 */
@@ -52,7 +52,7 @@
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
         background-color: rgba(200, 200, 200, 0.3) !important;
-        box-shadow: none !important;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       }
 
       /* readme 夜间模式透明 */
@@ -60,7 +60,7 @@
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
         background-color: rgba(0, 0, 0, 0.3) !important;
-        box-shadow: none !important;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       }
 
       /* 左侧侧边栏目录 */
@@ -161,14 +161,29 @@
       * {
         text-shadow: 0px 0px 0.8px !important;
       }
-	  
-	  /* 标签栏 hover 状态去掉横线/阴影 */
-      .header .tab:hover,
-      .header .tab:focus {
-	      box-shadow: none !important;
-          border-bottom: none !important;
+
+      /* 新增：覆盖Windows浏览器顶部hover时的hairline分隔线 */
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;  /* 覆盖1px线 + 缓冲 */
+        background: inherit;  /* 继承body背景，融合无缝 */
+        z-index: 9999;  /* 置于最上层 */
+        pointer-events: none;  /* 不干扰鼠标 */
       }
 
+      /* 白天模式：如果背景顶部偏亮，可用渐变微调（可选，保持不变则忽略） */
+      .hope-ui-light body::before {
+        background: linear-gradient(to bottom, rgba(255, 255, 255, 0.1), transparent);
+      }
+
+      /* 夜间模式：类似渐变匹配 */
+      .hope-ui-dark body::before {
+        background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), transparent);
+      }
     </style>
 
     <meta charset="utf-8" />
