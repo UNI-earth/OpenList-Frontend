@@ -43,17 +43,19 @@ export const Share = () => {
   const { copy } = useUtil()
 
   const [link, setLink] = createSignal("")
-  const [expireSelect, setExpireSelect] = createSignal("2d") // ✅ 默认 2 天
+  const [expireSelect, setExpireSelect] = createSignal<"2h" | "2d" | "1w" | "1M" | "never">("2d")
 
   const { isOpen, onOpen, onClose } = createDisclosure()
-
   const [share, setShare] = createStore<ShareType>({} as ShareType)
 
   /**
-   * ✅ 右键 / 工具栏分享统一入口
-   * ❗ 不判断 name，避免事件不匹配导致弹窗打不开
+   * ✅ 关键点：
+   * 必须保留 (name: string) 参数
+   * OpenList 内部是 bus.emit("tool", "share")
    */
-  const handler = () => {
+  const handler = (name: string) => {
+    if (name !== "share") return
+
     batch(() => {
       setLink("")
       setExpireSelect("2d")
@@ -66,10 +68,13 @@ export const Share = () => {
 
       setShare({
         files: paths,
-        expires: getExpireDate("2d").toISOString(), // ✅ 默认 2 天
-        pwd: randomPwd(), // ✅ 默认随机密码
+        // ✅ 默认 2 天有效期
+        expires: getExpireDate("2d").toISOString(),
+        // ✅ 默认随机密码
+        pwd: randomPwd(),
         max_accessed: 0,
         extract_folder: ExtractFolder.Front,
+        remark: "",
         readme: "",
         header: "",
       } as ShareType)
@@ -86,18 +91,7 @@ export const Share = () => {
   })
 
   return (
-    <Modal
-      blockScrollOnMount={false}
-      opened={isOpen()}
-      onClose={onClose}
-      size={{
-        "@initial": "xs",
-        "@md": "md",
-        "@lg": "lg",
-        "@xl": "xl",
-        "@2xl": "2xl",
-      }}
-    >
+    <Modal opened={isOpen()} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>{t("home.toolbar.share")}</ModalHeader>
@@ -109,10 +103,7 @@ export const Share = () => {
                 <Textarea variant="filled" value={link()} readonly />
               </ModalBody>
               <ModalFooter display="flex" gap="$2">
-                <Button
-                  colorScheme="primary"
-                  onClick={() => copy(link())}
-                >
+                <Button colorScheme="primary" onClick={() => copy(link())}>
                   {t("shares.copy_msg")}
                 </Button>
                 <Button colorScheme="info" onClick={onClose}>
@@ -124,25 +115,23 @@ export const Share = () => {
         >
           <Match when={link() === ""}>
             <ModalBody>
-              <VStack spacing="$1" alignItems="flex-start">
-                {/* 解压目录 */}
+              <VStack spacing="$2" alignItems="flex-start">
                 <Text size="sm">{t("shares.extract_folder")}</Text>
                 <Select
                   size="sm"
                   value={share.extract_folder}
-                  onChange={(e) => setShare("extract_folder", e)}
+                  onChange={(v) => setShare("extract_folder", v)}
                 >
                   <SelectOptions
                     options={[
-                      { key: ExtractFolder.Front, label: "前置解压" },
-                      { key: ExtractFolder.Back, label: "后置解压" },
+                      { key: ExtractFolder.Front, label: "前解压" },
+                      { key: ExtractFolder.Back, label: "后解压" },
                     ]}
                   />
                 </Select>
 
-                {/* 密码 */}
                 <Text size="sm">{t("shares.pwd")}</Text>
-                <HStack spacing="$1" w="$full">
+                <HStack w="$full">
                   <Input
                     size="sm"
                     value={share.pwd}
@@ -158,34 +147,26 @@ export const Share = () => {
                   />
                 </HStack>
 
-                {/* 最大访问次数 */}
                 <Text size="sm">{t("shares.max_accessed")}</Text>
                 <Input
                   type="number"
                   size="sm"
                   value={share.max_accessed}
                   onInput={(e) =>
-                    setShare(
-                      "max_accessed",
-                      parseInt(e.currentTarget.value),
-                    )
+                    setShare("max_accessed", Number(e.currentTarget.value))
                   }
                 />
 
-                {/* 过期时间（下拉） */}
                 <Text size="sm">{t("shares.expires")}</Text>
                 <Select
                   size="sm"
                   value={expireSelect()}
                   onChange={(v) => {
-                    setExpireSelect(v as string)
+                    setExpireSelect(v as any)
                     if (v === "never") {
                       setShare("expires", null)
                     } else {
-                      setShare(
-                        "expires",
-                        getExpireDate(v as string).toISOString(),
-                      )
+                      setShare("expires", getExpireDate(v).toISOString())
                     }
                   }}
                 >
@@ -200,7 +181,6 @@ export const Share = () => {
                   />
                 </Select>
 
-                {/* 头部说明 */}
                 <Text size="sm">{t("shares.header")}</Text>
                 <Textarea
                   size="sm"
