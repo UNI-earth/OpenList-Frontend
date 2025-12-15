@@ -56,7 +56,7 @@ export const Share = () => {
         })
         setShare({
           files: paths,
-          expires: getExpireDate("+2h").toISOString(), // 默认 2 小时
+          expires: getExpireDate("+2H").toISOString(), // 默认 2 小时
           pwd: randomPwd(),
           max_accessed: 0,
           order_by: OrderBy.None,
@@ -154,7 +154,7 @@ export const Share = () => {
                 <Text size="sm">{t("shares.expires")}</Text>
                 <Select
                   size="sm"
-                  value="2h"
+                  value="2H"
                   onChange={(e) => {
                     const v = e as string
                     if (v === "never") {
@@ -167,7 +167,7 @@ export const Share = () => {
                 >
                   <SelectOptions
                     options={[
-                      { key: "2h", label: "2 小时" },
+                      { key: "2H", label: "2 小时" },
                       { key: "2d", label: "2 天" },
                       { key: "1w", label: "1 周" },
                       { key: "1M", label: "1 月" },
