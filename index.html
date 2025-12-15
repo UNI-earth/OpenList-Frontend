@@ -3,6 +3,23 @@
   <head>
     <!-- customize head -->
     <style>
+      	/* 1. 全局禁用 backdrop-filter（最稳） */
+      * {
+        -webkit-backdrop-filter: none !important;
+        backdrop-filter: none !important;
+      }
+      
+      /* 2. 防止 GPU 亚像素分层 */
+      html, body {
+        background-color: #d8ecd8; /* 与页面主背景一致 */
+      }
+      
+      /* 3. 清除可能存在的伪分割效果 */
+      header, main, section, div {
+        border: none !important;
+        box-shadow: none !important;
+      }
+	  
       /* 去除通知栏右上角 X */
       .notify-render .hope-close-button {
         display: none;
