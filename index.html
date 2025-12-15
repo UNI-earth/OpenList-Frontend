@@ -18,6 +18,7 @@
         background-image: url("https://img.xfiles.dpdns.org/1765715050029_bg1.jpg") !important;
         background-repeat: no-repeat;
         background-size: cover;
+        background-attachment: fixed;
         background-position-x: center;
       }
 
@@ -26,6 +27,7 @@
         background-image: url("https://img.xfiles.dpdns.org/1765716042743_023d8b1099f080cb9ddaacd2c8473b62.jpg") !important;
         background-repeat: no-repeat;
         background-size: cover;
+        background-attachment: fixed;
         background-position-x: center;
       }
 
@@ -34,7 +36,7 @@
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
         background-color: rgba(200, 200, 200, 0.3) !important;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        box-shadow: none !important; /* 去掉阴影，消除横线 */
       }
 
       /* 主列表夜间模式透明 */
@@ -42,7 +44,7 @@
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
         background-color: rgba(0, 0, 0, 0.3) !important;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        box-shadow: none !important; /* 去掉阴影 */
       }
 
       /* readme 白天模式透明 */
@@ -50,7 +52,7 @@
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
         background-color: rgba(200, 200, 200, 0.3) !important;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        box-shadow: none !important;
       }
 
       /* readme 夜间模式透明 */
@@ -58,7 +60,7 @@
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
         background-color: rgba(0, 0, 0, 0.3) !important;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        box-shadow: none !important;
       }
 
       /* 左侧侧边栏目录 */
@@ -155,27 +157,10 @@
         outline: none !important;
       }
 
-      /* === 修复 Chrome blur 相邻导致的 1px 隐约分界线（不改样式） === */
-      
-      /* 1. 固定 blur 元素的 GPU 合成层（核心） */
-      .obj-box,
-      .hope-c-PJLV-ikSuVsl-css,
-      .hope-c-PJLV-iiuDLME-css,
-      .hope-c-PJLV-iiBaxsN-css,
-      .hope-c-kvTTWD-hYRNAb-variant-filled,
-      .hope-c-PJLV-ikEIIxw-css {
-        transform: translateZ(0);
-        will-change: transform;
+      /* 设置字体阴影 */
+      * {
+        text-shadow: 0px 0px 0.8px !important;
       }
-      
-      /* 2. 只对“主要大块 blur 容器”加 1px 缓冲，阻断像素泄漏 */
-      .obj-box,
-      .hope-c-PJLV-ikSuVsl-css,
-      .hope-c-PJLV-iiuDLME-css {
-        outline: 1px solid rgba(255, 255, 255, 0.001);
-        outline-offset: -1px;
-      }
-
     </style>
 
     <meta charset="utf-8" />
