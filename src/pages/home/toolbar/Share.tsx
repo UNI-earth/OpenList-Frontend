@@ -28,6 +28,8 @@ import {
 } from "@hope-ui/solid"
 import {
   ExtractFolder,
+  OrderBy,
+  OrderDirection,
   PResp,
   Share as ShareType,
   ShareInfo,
@@ -35,67 +37,67 @@ import {
 import { createStore } from "solid-js/store"
 import { getSetting, me, selectedObjs } from "~/store"
 import { TbRefresh } from "solid-icons/tb"
-import { SelectOptions } from "~/components"
+import { SelectOptions, MultiPathInput } from "~/components"
 
 export const Share = () => {
   const t = useT()
-  const { pathname } = useRouter()
-  const { copy } = useUtil()
-
   const [link, setLink] = createSignal("")
-  const [expireSelect, setExpireSelect] = createSignal<"2h" | "2d" | "1w" | "1M" | "never">("2d")
-
-  const { isOpen, onOpen, onClose } = createDisclosure()
-  const [share, setShare] = createStore<ShareType>({} as ShareType)
-
-  /**
-   * ✅ 关键点：
-   * 必须保留 (name: string) 参数
-   * OpenList 内部是 bus.emit("tool", "share")
-   */
+  const { pathname } = useRouter()
   const handler = (name: string) => {
-    if (name !== "share") return
-
-    batch(() => {
-      setLink("")
-      setExpireSelect("2d")
-
-      const paths = selectedObjs().map((obj) => {
-        const split =
-          pathname().endsWith("/") || obj.name.startsWith("/") ? "" : "/"
-        return `${me().base_path}${pathname()}${split}${obj.name}`
+    if (name === "share") {
+      batch(() => {
+        setLink("")
+        setExpireString("")
+        setExpireValid(true)
+        const paths = selectedObjs().map((obj) => {
+          const split =
+            pathname().endsWith("/") || obj.name.startsWith("/") ? "" : "/"
+          return `${me().base_path}${pathname()}${split}${obj.name}`
+        })
+        setShare({
+          files: paths,
+          expires: getExpireDate("+2d").toISOString(), // 默认 2 天
+          pwd: randomPwd(),
+          max_accessed: 0,
+          order_by: OrderBy.None,
+          order_direction: OrderDirection.None,
+          extract_folder: ExtractFolder.None,
+          remark: "",
+          readme: "",
+          header: "",
+        } as ShareType)
       })
-
-      setShare({
-        files: paths,
-        // ✅ 默认 2 天有效期
-        expires: getExpireDate("2d").toISOString(),
-        // ✅ 默认随机密码
-        pwd: randomPwd(),
-        max_accessed: 0,
-        extract_folder: ExtractFolder.Front,
-        remark: "",
-        readme: "",
-        header: "",
-      } as ShareType)
-    })
-
-    onOpen()
+      onOpen()
+    }
   }
-
   bus.on("tool", handler)
-  onCleanup(() => bus.off("tool", handler))
-
+  onCleanup(() => {
+    bus.off("tool", handler)
+  })
+  const { isOpen, onOpen, onClose } = createDisclosure()
+  const { copy } = useUtil()
+  const [expireString, setExpireString] = createSignal("")
+  const [expireValid, setExpireValid] = createSignal(true)
+  const [share, setShare] = createStore<ShareType>({} as ShareType)
   const [okLoading, ok] = useFetch((): PResp<ShareInfo> => {
     return r.post(`/share/create`, share)
   })
-
   return (
-    <Modal opened={isOpen()} onClose={onClose}>
+    <Modal
+      blockScrollOnMount={false}
+      opened={isOpen()}
+      onClose={onClose}
+      size={{
+        "@initial": "xs",
+        "@md": "md",
+        "@lg": "lg",
+        "@xl": "xl",
+        "@2xl": "2xl",
+      }}
+    >
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>{t("home.toolbar.share")}</ModalHeader>
-
         <Switch
           fallback={
             <>
@@ -103,7 +105,12 @@ export const Share = () => {
                 <Textarea variant="filled" value={link()} readonly />
               </ModalBody>
               <ModalFooter display="flex" gap="$2">
-                <Button colorScheme="primary" onClick={() => copy(link())}>
+                <Button
+                  colorScheme="primary"
+                  onClick={() => {
+                    copy(link())
+                  }}
+                >
                   {t("shares.copy_msg")}
                 </Button>
                 <Button colorScheme="info" onClick={onClose}>
@@ -115,58 +122,115 @@ export const Share = () => {
         >
           <Match when={link() === ""}>
             <ModalBody>
-              <VStack spacing="$2" alignItems="flex-start">
+              <VStack spacing="$1" alignItems="flex-start">
+                <Text size="sm">{t("shares.remark")}</Text>
+                <Textarea
+                  size="sm"
+                  value={share.remark}
+                  onInput={(e) => {
+                    setShare("remark", e.currentTarget.value)
+                  }}
+                />
                 <Text size="sm">{t("shares.extract_folder")}</Text>
                 <Select
                   size="sm"
                   value={share.extract_folder}
-                  onChange={(v) => setShare("extract_folder", v)}
+                  onChange={(e) => {
+                    setShare("extract_folder", e)
+                  }}
                 >
                   <SelectOptions
                     options={[
-                      { key: ExtractFolder.Front, label: "前解压" },
-                      { key: ExtractFolder.Back, label: "后解压" },
+                      {
+                        key: ExtractFolder.Front,
+                        label: t("shares.extract_folders.front"),
+                      },
+                      {
+                        key: ExtractFolder.Back,
+                        label: t("shares.extract_folders.back"),
+                      },
                     ]}
                   />
                 </Select>
-
+                <Text size="sm">{t("shares.order_by")}</Text>
+                <Select
+                  size="sm"
+                  value={share.order_by}
+                  onChange={(e) => {
+                    setShare("order_by", e)
+                  }}
+                >
+                  <SelectOptions
+                    options={[
+                      { key: OrderBy.Name, label: t("shares.order_bys.name") },
+                      { key: OrderBy.Size, label: t("shares.order_bys.size") },
+                      {
+                        key: OrderBy.Modified,
+                        label: t("shares.order_bys.modified"),
+                      },
+                    ]}
+                  />
+                </Select>
+                <Text size="sm">{t("shares.order_direction")}</Text>
+                <Select
+                  size="sm"
+                  value={share.order_direction}
+                  onChange={(e) => {
+                    setShare("order_direction", e)
+                  }}
+                >
+                  <SelectOptions
+                    options={[
+                      {
+                        key: OrderDirection.Asc,
+                        label: t("shares.order_directions.asc"),
+                      },
+                      {
+                        key: OrderDirection.Desc,
+                        label: t("shares.order_directions.desc"),
+                      },
+                    ]}
+                  />
+                </Select>
                 <Text size="sm">{t("shares.pwd")}</Text>
-                <HStack w="$full">
+                <HStack spacing="$1" w="$full">
                   <Input
                     size="sm"
                     value={share.pwd}
-                    onInput={(e) =>
+                    onInput={(e) => {
                       setShare("pwd", e.currentTarget.value)
-                    }
+                    }}
                   />
                   <IconButton
+                    colorScheme="neutral"
                     size="sm"
                     aria-label="random"
                     icon={<TbRefresh />}
-                    onClick={() => setShare("pwd", randomPwd())}
+                    onClick={() => {
+                      setShare("pwd", randomPwd())
+                    }}
                   />
                 </HStack>
-
                 <Text size="sm">{t("shares.max_accessed")}</Text>
                 <Input
                   type="number"
                   size="sm"
                   value={share.max_accessed}
-                  onInput={(e) =>
-                    setShare("max_accessed", Number(e.currentTarget.value))
-                  }
+                  onInput={(e) => {
+                    setShare("max_accessed", parseInt(e.currentTarget.value))
+                  }}
                 />
-
                 <Text size="sm">{t("shares.expires")}</Text>
                 <Select
                   size="sm"
-                  value={expireSelect()}
-                  onChange={(v) => {
-                    setExpireSelect(v as any)
+                  value="2d"
+                  onChange={(e) => {
+                    const v = e as string
                     if (v === "never") {
                       setShare("expires", null)
                     } else {
-                      setShare("expires", getExpireDate(v).toISOString())
+                      // 自动补 +，保持原有解析逻辑
+                      setShare("expires", getExpireDate("+" + v).toISOString())
                     }
                   }}
                 >
@@ -180,33 +244,41 @@ export const Share = () => {
                     ]}
                   />
                 </Select>
-
+                <Text size="sm">{t("shares.readme")}</Text>
+                <Textarea
+                  size="sm"
+                  value={share.readme}
+                  onInput={(e) => {
+                    setShare("readme", e.currentTarget.value)
+                  }}
+                />
                 <Text size="sm">{t("shares.header")}</Text>
                 <Textarea
                   size="sm"
                   value={share.header}
-                  onInput={(e) =>
+                  onInput={(e) => {
                     setShare("header", e.currentTarget.value)
-                  }
+                  }}
                 />
               </VStack>
             </ModalBody>
-
             <ModalFooter display="flex" gap="$2">
               <Button colorScheme="neutral" onClick={onClose}>
                 {t("global.cancel")}
               </Button>
               <Button
                 colorScheme="info"
+                disabled={!expireValid()}
                 loading={okLoading()}
                 onClick={async () => {
                   const resp = await ok()
                   handleResp(resp, (data) => {
+                    const templateData = makeTemplateData(data, {
+                      site_title: getSetting("site_title"),
+                    })
                     const msg = matchTemplate(
                       getSetting("share_summary_content"),
-                      makeTemplateData(data, {
-                        site_title: getSetting("site_title"),
-                      }),
+                      templateData,
                     )
                     setLink(msg)
                   })
