@@ -56,7 +56,7 @@ export const Share = () => {
         })
         setShare({
           files: paths,
-          expires: getExpireDate("+2d").toISOString(), // 默认 2 天
+          expires: getExpireDate("+2h").toISOString(), // 默认 2 小时
           pwd: randomPwd(),
           max_accessed: 0,
           order_by: OrderBy.None,
@@ -154,7 +154,7 @@ export const Share = () => {
                 <Text size="sm">{t("shares.expires")}</Text>
                 <Select
                   size="sm"
-                  value="2d"
+                  value="2h"
                   onChange={(e) => {
                     const v = e as string
                     if (v === "never") {
@@ -181,14 +181,6 @@ export const Share = () => {
                   value={share.readme}
                   onInput={(e) => {
                     setShare("readme", e.currentTarget.value)
-                  }}
-                />
-                <Text size="sm">{t("shares.header")}</Text>
-                <Textarea
-                  size="sm"
-                  value={share.header}
-                  onInput={(e) => {
-                    setShare("header", e.currentTarget.value)
                   }}
                 />
               </VStack>
