@@ -85,7 +85,7 @@
 
       /* 顶部 */
       #root > .header {
-        background: rgba(255, 255, 255, 0);
+        background: rgba(255, 255, 255, 0.01);  /* 修改这一行：从0改为0.01 */
       }
 
       /* 导航条 */
@@ -160,29 +160,6 @@
       /* 设置字体阴影 */
       * {
         text-shadow: 0px 0px 0.8px !important;
-      }
-
-      /* 新增：覆盖Windows浏览器顶部hover时的hairline分隔线 */
-      body::before {
-        content: "";
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 2px;  /* 覆盖1px线 + 缓冲 */
-        background: inherit;  /* 继承body背景，融合无缝 */
-        z-index: 9999;  /* 置于最上层 */
-        pointer-events: none;  /* 不干扰鼠标 */
-      }
-
-      /* 白天模式：如果背景顶部偏亮，可用渐变微调（可选，保持不变则忽略） */
-      .hope-ui-light body::before {
-        background: linear-gradient(to bottom, rgba(255, 255, 255, 0.1), transparent);
-      }
-
-      /* 夜间模式：类似渐变匹配 */
-      .hope-ui-dark body::before {
-        background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), transparent);
       }
     </style>
 
