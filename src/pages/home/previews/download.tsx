@@ -31,8 +31,8 @@ export const Download = (props: { openWith?: boolean }) => {
   return (
     <FileInfo>
       <HStack spacing="$2">
-        <Button colorScheme="accent" onClick={() => isShare(true)}>
-          {t("home.toolbar.share")}
+		<Button colorScheme="accent" onClick={() => {bus.emit("tool", "share")}}
+          >{t("home.toolbar.share")}
         </Button>
         <Button as="a" href={objStore.raw_url} target="_blank">
           {t("home.preview.download")}
