@@ -16,6 +16,7 @@ import { OpenWith } from "../file/open-with"
 import { createSignal, Show } from "solid-js"
 import { BsQrCode } from "solid-icons/bs"
 import QRCode from "qrcode"
+import { bus } from "~/utils"
 
 export const Download = (props: { openWith?: boolean }) => {
   const t = useT()
