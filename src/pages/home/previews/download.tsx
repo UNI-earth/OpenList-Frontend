@@ -9,19 +9,16 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@hope-ui/solid"
-import { useRouter, useT } from "~/hooks"
+import { useCopyLink, useT } from "~/hooks"
 import { objStore } from "~/store"
 import { FileInfo } from "./info"
 import { OpenWith } from "../file/open-with"
 import { createSignal, Show } from "solid-js"
 import { BsQrCode } from "solid-icons/bs"
 import QRCode from "qrcode"
-import { bus } from "~/utils"
 
 export const Download = (props: { openWith?: boolean }) => {
   const t = useT()
-  //const { copyCurrentRawLink } = useCopyLink()
-  const { isShare } = useRouter()
   const [qrUrl, setQrUrl] = createSignal("")
   QRCode.toDataURL(objStore.raw_url, {
     type: "image/jpeg",
@@ -32,9 +29,6 @@ export const Download = (props: { openWith?: boolean }) => {
   return (
     <FileInfo>
       <HStack spacing="$2">
-		<Button colorScheme="accent" onClick={() => {bus.emit("tool", "share")}}
-          >{t("home.toolbar.share")}
-        </Button>
         <Button as="a" href={objStore.raw_url} target="_blank">
           {t("home.preview.download")}
         </Button>
