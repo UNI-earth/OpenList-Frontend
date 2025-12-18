@@ -35,7 +35,7 @@ const ItemContent = (props: { name: string }) => {
 export const ContextMenu = () => {
   const t = useT()
   const { colorMode } = useColorMode()
-  const { copySelectedRawLink, copySelectedPreviewPage } = useCopyLink()
+  //const { copySelectedRawLink, copySelectedPreviewPage } = useCopyLink()
   const { batchDownloadSelected, sendToAria2, playlistDownloadSelected } =
     useDownload()
   const canPackageDownload = () => {
@@ -162,4 +162,3 @@ export const ContextMenu = () => {
     </Menu>
   )
 }
-
