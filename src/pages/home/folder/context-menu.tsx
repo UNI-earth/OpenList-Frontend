@@ -35,7 +35,7 @@ const ItemContent = (props: { name: string }) => {
 export const ContextMenu = () => {
   const t = useT()
   const { colorMode } = useColorMode()
-  //const { copySelectedRawLink, copySelectedPreviewPage } = useCopyLink()
+  const { copySelectedRawLink, copySelectedPreviewPage } = useCopyLink()
   const { batchDownloadSelected, sendToAria2, playlistDownloadSelected } =
     useDownload()
   const canPackageDownload = () => {
@@ -83,62 +83,77 @@ export const ContextMenu = () => {
       >
         <ItemContent name="decompress" />
       </Item>
+      
+      {/* 注释掉 "copy_link" 菜单项 */}
+      {/* <Show when={oneChecked()}>
         <Item
           onClick={({ props }) => {
             if (props.is_dir) {
-              if (!canPackageDownload()) {
-                notify.warning(t("home.toolbar.package_download_disabled"))
-                return
-              }
-              bus.emit("tool", "package_download")
+              copySelectedPreviewPage()
             } else {
-              batchDownloadSelected()
+              copySelectedRawLink(true)
             }
           }}
         >
-          <ItemContent name="download" />
+          <ItemContent name="copy_link" />
         </Item>
-        <Submenu
-          hidden={({ props }) => {
-            return props.type !== ObjType.VIDEO
-          }}
-          label={
-            <HStack spacing="$2">
-              <Icon
-                as={BsPlayCircleFill}
-                boxSize="$7"
-                p="$0_5"
-                color="$info9"
-              />
-              <Text>{t("home.preview.play_with")}</Text>
-            </HStack>
+      </Show> */}
+
+      <Item
+        onClick={({ props }) => {
+          if (props.is_dir) {
+            if (!canPackageDownload()) {
+              notify.warning(t("home.toolbar.package_download_disabled"))
+              return
+            }
+            bus.emit("tool", "package_download")
+          } else {
+            batchDownloadSelected()
           }
-        >
-          <For each={players}>
-            {(player) => (
-              <Item
-                onClick={({ props }) => {
-                  const href = convertURL(player.scheme, {
-                    raw_url: "",
-                    name: props.name,
-                    d_url: rawLink(props, true),
-                  })
-                  window.open(href, "_self")
-                }}
-              >
-                <HStack spacing="$2">
-                  <Image
-                    m="0 auto"
-                    boxSize="$7"
-                    src={`${window.__dynamic_base__}/images/${player.icon}.webp`}
-                  />
-                  <Text>{player.name}</Text>
-                </HStack>
-              </Item>
-            )}
-          </For>
-        </Submenu>
-      </Show>
+        }}
+      >
+        <ItemContent name="download" />
+      </Item>
+      <Submenu
+        hidden={({ props }) => {
+          return props.type !== ObjType.VIDEO
+        }}
+        label={
+          <HStack spacing="$2">
+            <Icon
+              as={BsPlayCircleFill}
+              boxSize="$7"
+              p="$0_5"
+              color="$info9"
+            />
+            <Text>{t("home.preview.play_with")}</Text>
+          </HStack>
+        }
+      >
+        <For each={players}>
+          {(player) => (
+            <Item
+              onClick={({ props }) => {
+                const href = convertURL(player.scheme, {
+                  raw_url: "",
+                  name: props.name,
+                  d_url: rawLink(props, true),
+                })
+                window.open(href, "_self")
+              }}
+            >
+              <HStack spacing="$2">
+                <Image
+                  m="0 auto"
+                  boxSize="$7"
+                  src={`${window.__dynamic_base__}/images/${player.icon}.webp`}
+                />
+                <Text>{player.name}</Text>
+              </HStack>
+            </Item>
+          )}
+        </For>
+      </Submenu>
       <Show when={!oneChecked() && haveSelected()}>
         <Submenu label={<ItemContent name="download" />}>
           <Item onClick={batchDownloadSelected}>
