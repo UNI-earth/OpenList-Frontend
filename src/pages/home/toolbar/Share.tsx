@@ -57,7 +57,7 @@ export const Share = () => {
         setShare({
           files: paths,
           expires: getExpireDate("+1d").toISOString(), // 默认1天
-          pwd: randomPwd(),
+          pwd: "",
           max_accessed: 0,
           order_by: OrderBy.None,
           order_direction: OrderDirection.None,
