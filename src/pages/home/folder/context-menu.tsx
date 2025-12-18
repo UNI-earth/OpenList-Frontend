@@ -83,18 +83,6 @@ export const ContextMenu = () => {
       >
         <ItemContent name="decompress" />
       </Item>
-      <Show when={oneChecked()}>
-        <Item
-          onClick={({ props }) => {
-            if (props.is_dir) {
-              copySelectedPreviewPage()
-            } else {
-              copySelectedRawLink(true)
-            }
-          }}
-        >
-          <ItemContent name="copy_link" />
-        </Item>
         <Item
           onClick={({ props }) => {
             if (props.is_dir) {
@@ -152,17 +140,6 @@ export const ContextMenu = () => {
         </Submenu>
       </Show>
       <Show when={!oneChecked() && haveSelected()}>
-        <Submenu label={<ItemContent name="copy_link" />}>
-          <Item onClick={copySelectedPreviewPage}>
-            {t("home.toolbar.preview_page")}
-          </Item>
-          <Item onClick={() => copySelectedRawLink()}>
-            {t("home.toolbar.down_link")}
-          </Item>
-          <Item onClick={() => copySelectedRawLink(true)}>
-            {t("home.toolbar.encode_down_link")}
-          </Item>
-        </Submenu>
         <Submenu label={<ItemContent name="download" />}>
           <Item onClick={batchDownloadSelected}>
             {t("home.toolbar.batch_download")}
@@ -185,3 +162,4 @@ export const ContextMenu = () => {
     </Menu>
   )
 }
+
