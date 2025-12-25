@@ -6,13 +6,13 @@ import {
   ProgressLabel,
   Text,
   IconButton,
-  Box, // 引入 Box
+  Box,
 } from "@hope-ui/solid"
 import { Motion } from "solid-motionone"
 import { useContextMenu } from "solid-contextmenu"
 import { batch, Show } from "solid-js"
 import { LinkWithPush } from "~/components"
-import { useDownload, usePath, useRouter, useUtil } from "~/hooks" // 确保引入 useDownload
+import { useDownload, usePath, useRouter, useUtil } from "~/hooks"
 import {
   checkboxOpen,
   getMainColor,
@@ -42,6 +42,7 @@ export interface Col {
   w: any
 }
 
+// 保持你要求的布局比例
 export const cols: Col[] = [
   { name: "name", textAlign: "left", w: { "@initial": "76%", "@md": "65%" } },
   { name: "size", textAlign: "right", w: { "@initial": "24%", "@md": "10%" } },
@@ -56,7 +57,7 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
   const { setPathAs } = usePath()
   const { show } = useContextMenu({ id: 1 })
   const { pushHref, to } = useRouter()
-  // 参考 context-menu.tsx，引入 batchDownloadSelected
+  // 引入 batchDownloadSelected 以确保与右键菜单逻辑一致
   const { batchDownloadSelected } = useDownload() 
   const { openWithDoubleClick, toggleWithClick, restoreSelectionCache } =
     useSelectWithMouse()
@@ -111,7 +112,7 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
           show(e, { props: props.obj })
         }}
       >
-        {/* 设置 position="relative" 保证 Box 定位准确 */}
+        {/* 设置 position="relative" 作为按钮定位基准 */}
         <HStack class="name-box" spacing="$1" w={cols[0].w} flexShrink={0} position="relative">
           <Show when={checkboxOpen()}>
             <ItemCheckbox
@@ -142,7 +143,7 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
           <Text
             class="name"
             flex={1}
-            pr="$20"
+            pr="$24" // 预留出足够的右边距防止文件名盖住按钮
             css={{
               wordBreak: "break-all",
               whiteSpace: filenameStyle() === "multi_line" ? "unset" : "nowrap",
@@ -156,16 +157,19 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
             {props.obj.name}
           </Text>
 
-          {/* 绝对定位容器：解决布局高度被撑开的问题 */}
+          {/* 绝对定位按钮容器：完全不影响行间距 */}
           <Box
             position="absolute"
-            right="0"
+            right="$4" // 往左偏移一点，不紧贴右端
             top="50%"
             transform="translateY(-50%)"
             opacity={0}
             _groupHover={{ opacity: 1 }}
             transition="opacity 0.2s"
             zIndex={10}
+            w="$20" // 固定宽度
+            display="flex"
+            justifyContent="flex-end" // 内部靠右排列
             on:click={(e: MouseEvent) => e.stopPropagation()}
           >
             <HStack spacing="$1">
@@ -184,7 +188,7 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
                   bus.emit("tool", "share")
                 }}
               />
-              {/* 参考 context-menu 实现：文件夹不显示下载 */}
+              {/* 仅文件显示下载按钮 */}
               <Show when={!props.obj.is_dir}>
                 <IconButton
                   variant="ghost"
@@ -195,11 +199,10 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
                   on:click={(e: MouseEvent) => {
                     e.preventDefault()
                     e.stopPropagation()
-                    // 1. 强制选中当前项（同步 store）
+                    // 参考右键菜单逻辑，强制选中后调用批量下载
                     batch(() => {
                       selectIndex(props.index, true, true)
                     })
-                    // 2. 调用与右键菜单一致的批量下载方法（单选时即为单文件下载）
                     batchDownloadSelected()
                   }}
                 />
