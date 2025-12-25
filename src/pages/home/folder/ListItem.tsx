@@ -6,13 +6,13 @@ import {
   ProgressLabel,
   Text,
   IconButton,
-  Box,
+  Box, // 引入 Box
 } from "@hope-ui/solid"
 import { Motion } from "solid-motionone"
 import { useContextMenu } from "solid-contextmenu"
 import { batch, Show } from "solid-js"
 import { LinkWithPush } from "~/components"
-import { useDownload, usePath, useRouter, useUtil } from "~/hooks"
+import { useDownload, usePath, useRouter, useUtil } from "~/hooks" // 确保引入 useDownload
 import {
   checkboxOpen,
   getMainColor,
@@ -56,7 +56,8 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
   const { setPathAs } = usePath()
   const { show } = useContextMenu({ id: 1 })
   const { pushHref, to } = useRouter()
-  const { download } = useDownload() 
+  // 参考 context-menu.tsx，引入 batchDownloadSelected
+  const { batchDownloadSelected } = useDownload() 
   const { openWithDoubleClick, toggleWithClick, restoreSelectionCache } =
     useSelectWithMouse()
   const filenameStyle = () => local["list_item_filename_overflow"]
@@ -93,7 +94,6 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
           to(pushHref(props.obj.name))
         }}
         on:click={(e: MouseEvent) => {
-          // 如果点击的是内部按钮（带有 stopPropagation），这里不应执行
           if (openWithDoubleClick()) return
           if (e.ctrlKey || e.metaKey || e.shiftKey) return
           if (!restoreSelectionCache()) return
@@ -111,6 +111,7 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
           show(e, { props: props.obj })
         }}
       >
+        {/* 设置 position="relative" 保证 Box 定位准确 */}
         <HStack class="name-box" spacing="$1" w={cols[0].w} flexShrink={0} position="relative">
           <Show when={checkboxOpen()}>
             <ItemCheckbox
@@ -141,7 +142,7 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
           <Text
             class="name"
             flex={1}
-            pr="$20" // 为绝对定位按钮预留右侧安全距离
+            pr="$20"
             css={{
               wordBreak: "break-all",
               whiteSpace: filenameStyle() === "multi_line" ? "unset" : "nowrap",
@@ -155,7 +156,7 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
             {props.obj.name}
           </Text>
 
-          {/* 绝对定位按钮组：不参与布局计算，确保间距不变 */}
+          {/* 绝对定位容器：解决布局高度被撑开的问题 */}
           <Box
             position="absolute"
             right="0"
@@ -164,9 +165,10 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
             opacity={0}
             _groupHover={{ opacity: 1 }}
             transition="opacity 0.2s"
-            zIndex={15}
+            zIndex={10}
+            on:click={(e: MouseEvent) => e.stopPropagation()}
           >
-            <HStack spacing="$1" on:click={(e: MouseEvent) => e.stopPropagation()}>
+            <HStack spacing="$1">
               <IconButton
                 variant="ghost"
                 size="md"
@@ -174,14 +176,15 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
                 aria-label="share"
                 icon={<Icon as={operations["share"].icon} color={operations["share"].color} boxSize="$5" />}
                 on:click={(e: MouseEvent) => {
-                  e.preventDefault();
-                  e.stopPropagation();
+                  e.preventDefault()
+                  e.stopPropagation()
                   batch(() => {
-                    selectIndex(props.index, true, true);
-                  });
-                  bus.emit("tool", "share");
+                    selectIndex(props.index, true, true)
+                  })
+                  bus.emit("tool", "share")
                 }}
               />
+              {/* 参考 context-menu 实现：文件夹不显示下载 */}
               <Show when={!props.obj.is_dir}>
                 <IconButton
                   variant="ghost"
@@ -190,15 +193,14 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
                   aria-label="download"
                   icon={<Icon as={operations["download"].icon} color={operations["download"].color} boxSize="$5" />}
                   on:click={(e: MouseEvent) => {
-                    // 彻底阻断父级 Link 跳转
-                    e.preventDefault();
-                    e.stopPropagation();
-                    // 强制将 Store 中的选中状态设置为当前文件
+                    e.preventDefault()
+                    e.stopPropagation()
+                    // 1. 强制选中当前项（同步 store）
                     batch(() => {
-                      selectIndex(props.index, true, true);
-                    });
-                    // 直接调用下载逻辑
-                    download(props.obj);
+                      selectIndex(props.index, true, true)
+                    })
+                    // 2. 调用与右键菜单一致的批量下载方法（单选时即为单文件下载）
+                    batchDownloadSelected()
                   }}
                 />
               </Show>
