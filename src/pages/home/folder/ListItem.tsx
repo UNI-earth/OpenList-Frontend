@@ -6,12 +6,13 @@ import {
   ProgressLabel,
   Text,
   IconButton,
+  Box, // 引入 Box 用于绝对定位
 } from "@hope-ui/solid"
 import { Motion } from "solid-motionone"
 import { useContextMenu } from "solid-contextmenu"
 import { batch, Show } from "solid-js"
 import { LinkWithPush } from "~/components"
-import { useDownload, usePath, useRouter, useUtil } from "~/hooks" // [修改] 引入 useDownload
+import { useDownload, usePath, useRouter, useUtil } from "~/hooks"
 import {
   checkboxOpen,
   getMainColor,
@@ -55,19 +56,17 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
   const { setPathAs } = usePath()
   const { show } = useContextMenu({ id: 1 })
   const { pushHref, to } = useRouter()
-  const { download } = useDownload() // [修改] 获取下载方法
+  const { download } = useDownload() 
   const { openWithDoubleClick, toggleWithClick, restoreSelectionCache } =
     useSelectWithMouse()
   const filenameStyle = () => local["list_item_filename_overflow"]
-  
+
   return (
     <Motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.2 }}
-      style={{
-        width: "100%",
-      }}
+      style={{ width: "100%" }}
     >
       <HStack
         role="group"
@@ -111,7 +110,8 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
           show(e, { props: props.obj })
         }}
       >
-        <HStack class="name-box" spacing="$1" w={cols[0].w} flexShrink={0}>
+        {/* 关键修改：设置 position="relative" 为按钮提供参考系 */}
+        <HStack class="name-box" spacing="$1" w={cols[0].w} flexShrink={0} position="relative">
           <Show when={checkboxOpen()}>
             <ItemCheckbox
               on:mousedown={(e: MouseEvent) => e.stopPropagation()}
@@ -141,60 +141,63 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
           <Text
             class="name"
             flex={1}
+            pr="$20" // 为右侧绝对定位的按钮留出边距，防止长文件名重叠
             css={{
               wordBreak: "break-all",
               whiteSpace: filenameStyle() === "multi_line" ? "unset" : "nowrap",
-              "overflow-x":
-                filenameStyle() === "scrollable" ? "auto" : "hidden",
-              textOverflow:
-                filenameStyle() === "ellipsis" ? "ellipsis" : "unset",
+              "overflow-x": filenameStyle() === "scrollable" ? "auto" : "hidden",
+              textOverflow: filenameStyle() === "ellipsis" ? "ellipsis" : "unset",
               "scrollbar-width": "none",
-              "&::-webkit-scrollbar": {
-                display: "none",
-              },
+              "&::-webkit-scrollbar": { display: "none" },
             }}
             title={props.obj.name}
           >
             {props.obj.name}
           </Text>
 
-          <HStack
-            spacing="$1"
+          {/* 关键修改：使用绝对定位 Box 包装按钮组，h="0" 确保不影响行高 */}
+          <Box
+            position="absolute"
+            right="0"
+            top="50%"
+            transform="translateY(-50%)"
             opacity={0}
             _groupHover={{ opacity: 1 }}
             transition="opacity 0.2s"
-            flexShrink={0}
+            zIndex={10}
           >
-            <IconButton
-              variant="ghost"
-              size="md"
-              aria-label="share"
-              icon={<Icon as={operations["share"].icon} color={operations["share"].color} boxSize="$5" />}
-              // [修改] 使用 on:click 严格阻止冒泡，并确保选中状态
-              on:click={(e: MouseEvent) => {
-                e.preventDefault()
-                e.stopPropagation()
-                batch(() => { selectIndex(props.index, true, true) })
-                bus.emit("tool", "share")
-              }}
-            />
-            {/* [修改] 文件夹不显示下载按钮 */}
-            <Show when={!props.obj.is_dir}>
+            <HStack spacing="$1">
               <IconButton
                 variant="ghost"
                 size="md"
-                aria-label="download"
-                icon={<Icon as={operations["download"].icon} color={operations["download"].color} boxSize="$5" />}
-                // [修改] 直接调用 download 钩子，绕过 bus 提高下载触发成功率
+                compact // 使用紧凑模式减少内部 padding
+                aria-label="share"
+                icon={<Icon as={operations["share"].icon} color={operations["share"].color} boxSize="$5" />}
                 on:click={(e: MouseEvent) => {
                   e.preventDefault()
                   e.stopPropagation()
                   batch(() => { selectIndex(props.index, true, true) })
-                  download(props.obj)
+                  bus.emit("tool", "share")
                 }}
               />
-            </Show>
-          </HStack>
+              <Show when={!props.obj.is_dir}>
+                <IconButton
+                  variant="ghost"
+                  size="md"
+                  compact
+                  aria-label="download"
+                  icon={<Icon as={operations["download"].icon} color={operations["download"].color} boxSize="$5" />}
+                  on:click={(e: MouseEvent) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    // 必须先选中该项，否则 download 钩子可能拿不到目标对象
+                    batch(() => { selectIndex(props.index, true, true) })
+                    download(props.obj)
+                  }}
+                />
+              </Show>
+            </HStack>
+          </Box>
         </HStack>
 
         <Show
