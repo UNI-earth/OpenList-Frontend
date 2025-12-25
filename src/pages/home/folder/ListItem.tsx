@@ -157,7 +157,6 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
           {/* 悬浮按钮组 */}
           <Box
             position="absolute"
-            right="$4" // 调整偏移量，让按钮整体往左移一点
             top="50%"
             transform="translateY(-50%)"
             opacity={0}
