@@ -97,7 +97,7 @@ export const Share = () => {
             <HStack spacing="$2" w="$full">
               <Text size="sm" whiteSpace="nowrap" minW="100px">{t("shares.pwd")}:</Text>
               <Input size="sm" value={share.pwd} onInput={(e) => setShare("pwd", e.currentTarget.value)} />
-              <IconButton colorScheme="neutral" size="sm" aria-label="random" icon={<TbRefresh />} onClick={() => setShare("pwd", randomPwd())} />
+              <IconButton colorScheme="neutral" size="sm" aria-label="random" icon={<TbRefresh />} w="$8" flexShrink={0} onClick={() => setShare("pwd", randomPwd())} />
             </HStack>
             <HStack spacing="$2" w="$full">
               <Text size="sm" whiteSpace="nowrap" minW="100px">{t("shares.max_accessed")}:</Text>
@@ -109,12 +109,8 @@ export const Share = () => {
                 <SelectOptions options={expireOptions.map(opt => ({ key: opt.value, label: opt.label }))} />
               </Select>
             </HStack>
-            <VStack spacing="$1" alignItems="flex-start">
-              <Text size="sm">{t("shares.readme")}:</Text>
-              <Textarea size="sm" value={share.readme} onInput={(e) => setShare("readme", e.currentTarget.value)} />
-            </VStack>
 
-            {/* [备注要求 1] 在下方增加“分享信息”文本框，默认 3 行 */}
+            {/* [备注要求 1] 在下方增加“分享信息”文本框，默认 4 行 */}
             <VStack spacing="$1" alignItems="flex-start" mt="$2">
               <Text size="sm" fontWeight="$bold">分享信息:</Text>
               <Textarea
@@ -123,7 +119,7 @@ export const Share = () => {
                 size="sm"
                 variant="filled"
                 value={link()}
-                rows={3}
+                rows={4}
               />
             </VStack>
           </VStack>
