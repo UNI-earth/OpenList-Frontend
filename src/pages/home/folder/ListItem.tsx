@@ -6,7 +6,7 @@ import {
   ProgressLabel,
   Text,
   IconButton,
-  Box, // 引入 Box 用于绝对定位
+  Box,
 } from "@hope-ui/solid"
 import { Motion } from "solid-motionone"
 import { useContextMenu } from "solid-contextmenu"
@@ -93,6 +93,7 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
           to(pushHref(props.obj.name))
         }}
         on:click={(e: MouseEvent) => {
+          // 如果点击的是内部按钮（带有 stopPropagation），这里不应执行
           if (openWithDoubleClick()) return
           if (e.ctrlKey || e.metaKey || e.shiftKey) return
           if (!restoreSelectionCache()) return
@@ -110,7 +111,6 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
           show(e, { props: props.obj })
         }}
       >
-        {/* 关键修改：设置 position="relative" 为按钮提供参考系 */}
         <HStack class="name-box" spacing="$1" w={cols[0].w} flexShrink={0} position="relative">
           <Show when={checkboxOpen()}>
             <ItemCheckbox
@@ -141,7 +141,7 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
           <Text
             class="name"
             flex={1}
-            pr="$20" // 为右侧绝对定位的按钮留出边距，防止长文件名重叠
+            pr="$20" // 为绝对定位按钮预留右侧安全距离
             css={{
               wordBreak: "break-all",
               whiteSpace: filenameStyle() === "multi_line" ? "unset" : "nowrap",
@@ -155,7 +155,7 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
             {props.obj.name}
           </Text>
 
-          {/* 关键修改：使用绝对定位 Box 包装按钮组，h="0" 确保不影响行高 */}
+          {/* 绝对定位按钮组：不参与布局计算，确保间距不变 */}
           <Box
             position="absolute"
             right="0"
@@ -164,20 +164,22 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
             opacity={0}
             _groupHover={{ opacity: 1 }}
             transition="opacity 0.2s"
-            zIndex={10}
+            zIndex={15}
           >
-            <HStack spacing="$1">
+            <HStack spacing="$1" on:click={(e: MouseEvent) => e.stopPropagation()}>
               <IconButton
                 variant="ghost"
                 size="md"
-                compact // 使用紧凑模式减少内部 padding
+                compact
                 aria-label="share"
                 icon={<Icon as={operations["share"].icon} color={operations["share"].color} boxSize="$5" />}
                 on:click={(e: MouseEvent) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  batch(() => { selectIndex(props.index, true, true) })
-                  bus.emit("tool", "share")
+                  e.preventDefault();
+                  e.stopPropagation();
+                  batch(() => {
+                    selectIndex(props.index, true, true);
+                  });
+                  bus.emit("tool", "share");
                 }}
               />
               <Show when={!props.obj.is_dir}>
@@ -188,11 +190,15 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
                   aria-label="download"
                   icon={<Icon as={operations["download"].icon} color={operations["download"].color} boxSize="$5" />}
                   on:click={(e: MouseEvent) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    // 必须先选中该项，否则 download 钩子可能拿不到目标对象
-                    batch(() => { selectIndex(props.index, true, true) })
-                    download(props.obj)
+                    // 彻底阻断父级 Link 跳转
+                    e.preventDefault();
+                    e.stopPropagation();
+                    // 强制将 Store 中的选中状态设置为当前文件
+                    batch(() => {
+                      selectIndex(props.index, true, true);
+                    });
+                    // 直接调用下载逻辑
+                    download(props.obj);
                   }}
                 />
               </Show>
