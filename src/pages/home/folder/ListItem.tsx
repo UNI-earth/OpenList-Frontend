@@ -5,8 +5,7 @@ import {
   ProgressIndicator,
   ProgressLabel,
   Text,
-  IconButton, // [修改]
-  Box,        // [修改]
+  IconButton,
 } from "@hope-ui/solid"
 import { Motion } from "solid-motionone"
 import { useContextMenu } from "solid-contextmenu"
@@ -34,7 +33,7 @@ import {
 } from "~/utils"
 import { getIconByObj } from "~/utils/icon"
 import { ItemCheckbox, useSelectWithMouse } from "./helper"
-import { operations } from "../toolbar/operations" // [修改]
+import { operations } from "../toolbar/operations"
 
 export interface Col {
   name: OrderBy
@@ -43,9 +42,9 @@ export interface Col {
 }
 
 export const cols: Col[] = [
-  { name: "name", textAlign: "left", w: { "@initial": "76%", "@md": "50%" } },
-  { name: "size", textAlign: "right", w: { "@initial": "24%", "@md": "17%" } },
-  { name: "modified", textAlign: "right", w: { "@initial": 0, "@md": "33%" } },
+  { name: "name", textAlign: "left", w: { "@initial": "76%", "@md": "65%" } },
+  { name: "size", textAlign: "right", w: { "@initial": "24%", "@md": "10%" } },
+  { name: "modified", textAlign: "right", w: { "@initial": 0, "@md": "25%" } },
 ]
 
 export const ListItem = (props: { obj: StoreObj; index: number }) => {
@@ -60,6 +59,7 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
   const { openWithDoubleClick, toggleWithClick, restoreSelectionCache } =
     useSelectWithMouse()
   const filenameStyle = () => local["list_item_filename_overflow"]
+  
   return (
     <Motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -111,7 +111,7 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
           show(e, { props: props.obj })
         }}
       >
-        <HStack class="name-box" spacing="$1" w={cols[0].w} flexShrink={0} position="relative">
+        <HStack class="name-box" spacing="$1" w={cols[0].w} flexShrink={0}>
           <Show when={checkboxOpen()}>
             <ItemCheckbox
               on:mousedown={(e: MouseEvent) => e.stopPropagation()}
@@ -141,56 +141,59 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
           <Text
             class="name"
             flex={1}
-            pr="$16" // [修改] 为悬浮按钮留出右侧固定空间，防止文件名盖住按钮
             css={{
               wordBreak: "break-all",
               whiteSpace: filenameStyle() === "multi_line" ? "unset" : "nowrap",
-              "overflow-x": filenameStyle() === "scrollable" ? "auto" : "hidden",
-              textOverflow: filenameStyle() === "ellipsis" ? "ellipsis" : "unset",
+              "overflow-x":
+                filenameStyle() === "scrollable" ? "auto" : "hidden",
+              textOverflow:
+                filenameStyle() === "ellipsis" ? "ellipsis" : "unset",
               "scrollbar-width": "none",
-              "&::-webkit-scrollbar": { display: "none" },
+              "&::-webkit-scrollbar": {
+                display: "none",
+              },
             }}
             title={props.obj.name}
           >
             {props.obj.name}
           </Text>
 
-          {/* [修改] 悬浮按钮：使用绝对定位保证不撑开行高，使用 download 直接调用触发下载 */}
           <HStack
             spacing="$1"
             opacity={0}
             _groupHover={{ opacity: 1 }}
             transition="opacity 0.2s"
-            position="absolute"
-            right="$1"
-            zIndex={10}
+            flexShrink={0}
           >
             <IconButton
               variant="ghost"
-              p="$1"
-              h="auto"
+              size="md"
               aria-label="share"
               icon={<Icon as={operations["share"].icon} color={operations["share"].color} boxSize="$5" />}
+              // [修改] 使用 on:click 严格阻止冒泡，并确保选中状态
               on:click={(e: MouseEvent) => {
-                e.preventDefault();
-                e.stopPropagation();
-                selectIndex(props.index, true, true);
-                bus.emit("tool", "share");
+                e.preventDefault()
+                e.stopPropagation()
+                batch(() => { selectIndex(props.index, true, true) })
+                bus.emit("tool", "share")
               }}
             />
-            <IconButton
-              variant="ghost"
-              p="$1"
-              h="auto"
-              aria-label="download"
-              icon={<Icon as={operations["download"].icon} color={operations["download"].color} boxSize="$5" />}
-              on:click={(e: MouseEvent) => {
-                e.preventDefault();
-                e.stopPropagation();
-                // 直接调用 download 方法，比 emit bus 更可靠
-                download(props.obj);
-              }}
-            />
+            {/* [修改] 文件夹不显示下载按钮 */}
+            <Show when={!props.obj.is_dir}>
+              <IconButton
+                variant="ghost"
+                size="md"
+                aria-label="download"
+                icon={<Icon as={operations["download"].icon} color={operations["download"].color} boxSize="$5" />}
+                // [修改] 直接调用 download 钩子，绕过 bus 提高下载触发成功率
+                on:click={(e: MouseEvent) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  batch(() => { selectIndex(props.index, true, true) })
+                  download(props.obj)
+                }}
+              />
+            </Show>
           </HStack>
         </HStack>
 
