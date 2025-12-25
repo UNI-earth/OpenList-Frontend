@@ -112,7 +112,7 @@ export const Share = () => {
           fallback={
             <>
               <ModalBody>
-                <Textarea variant="filled" value={link()} readonly rows={4} />
+                <Textarea variant="filled" value={link()} readonly rows={3} />
               </ModalBody>
               <ModalFooter display="flex" gap="$2">
                 <Button
