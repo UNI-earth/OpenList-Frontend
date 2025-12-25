@@ -6,12 +6,13 @@ import {
   ProgressLabel,
   Text,
   IconButton, // [修改]
+  Box,        // [修改]
 } from "@hope-ui/solid"
 import { Motion } from "solid-motionone"
 import { useContextMenu } from "solid-contextmenu"
 import { batch, Show } from "solid-js"
 import { LinkWithPush } from "~/components"
-import { usePath, useRouter, useUtil } from "~/hooks"
+import { useDownload, usePath, useRouter, useUtil } from "~/hooks" // [修改] 引入 useDownload
 import {
   checkboxOpen,
   getMainColor,
@@ -55,6 +56,7 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
   const { setPathAs } = usePath()
   const { show } = useContextMenu({ id: 1 })
   const { pushHref, to } = useRouter()
+  const { download } = useDownload() // [修改] 获取下载方法
   const { openWithDoubleClick, toggleWithClick, restoreSelectionCache } =
     useSelectWithMouse()
   const filenameStyle = () => local["list_item_filename_overflow"]
@@ -68,7 +70,7 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
       }}
     >
       <HStack
-        role="group" // [修改]
+        role="group"
         classList={{ selected: !!props.obj.selected }}
         class="list-item viselect-item"
         data-index={props.index}
@@ -109,7 +111,7 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
           show(e, { props: props.obj })
         }}
       >
-        <HStack class="name-box" spacing="$1" w={cols[0].w} flexShrink={0}>
+        <HStack class="name-box" spacing="$1" w={cols[0].w} flexShrink={0} position="relative">
           <Show when={checkboxOpen()}>
             <ItemCheckbox
               on:mousedown={(e: MouseEvent) => e.stopPropagation()}
@@ -139,6 +141,7 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
           <Text
             class="name"
             flex={1}
+            pr="$16" // [修改] 为悬浮按钮留出右侧固定空间，防止文件名盖住按钮
             css={{
               wordBreak: "break-all",
               whiteSpace: filenameStyle() === "multi_line" ? "unset" : "nowrap",
@@ -152,20 +155,22 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
             {props.obj.name}
           </Text>
 
-          {/* [修改] 悬浮按钮容器 */}
+          {/* [修改] 悬浮按钮：使用绝对定位保证不撑开行高，使用 download 直接调用触发下载 */}
           <HStack
             spacing="$1"
             opacity={0}
             _groupHover={{ opacity: 1 }}
             transition="opacity 0.2s"
-            flexShrink={0}
+            position="absolute"
+            right="$1"
+            zIndex={10}
           >
             <IconButton
               variant="ghost"
-              size="md"
+              p="$1"
+              h="auto"
               aria-label="share"
               icon={<Icon as={operations["share"].icon} color={operations["share"].color} boxSize="$5" />}
-              // 关键：在按钮级别再次强制阻止事件冒泡和默认行为
               on:click={(e: MouseEvent) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -175,15 +180,15 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
             />
             <IconButton
               variant="ghost"
-              size="md"
+              p="$1"
+              h="auto"
               aria-label="download"
               icon={<Icon as={operations["download"].icon} color={operations["download"].color} boxSize="$5" />}
               on:click={(e: MouseEvent) => {
                 e.preventDefault();
                 e.stopPropagation();
-                // 必须先选中该文件，下载功能才能识别到当前对象
-                selectIndex(props.index, true, true);
-                bus.emit("tool", "download");
+                // 直接调用 download 方法，比 emit bus 更可靠
+                download(props.obj);
               }}
             />
           </HStack>
