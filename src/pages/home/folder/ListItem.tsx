@@ -140,7 +140,8 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
           <Text
             class="name"
             flex={1}
-            pr="$24"
+            // 优化点：手机端使用极小右边距，只有宽屏才为悬浮按钮预留空间
+            pr={{ "@initial": "$2", "@md": "$24" }}
             css={{
               wordBreak: "break-all",
               whiteSpace: filenameStyle() === "multi_line" ? "unset" : "nowrap",
@@ -154,11 +155,13 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
             {props.obj.name}
           </Text>
 
-          {/* 悬浮按钮组 */}
+          {/* 悬浮按钮组：手机端彻底隐藏不渲染，避免干扰 */}
           <Box
             position="absolute"
+            right="$4"
             top="50%"
             transform="translateY(-50%)"
+            display={{ "@initial": "none", "@md": "flex" }}
             opacity={0}
             _groupHover={{ opacity: 1 }}
             transition="opacity 0.2s"
@@ -166,7 +169,6 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
             on:click={(e: MouseEvent) => e.stopPropagation()}
           >
             <HStack spacing="$1">
-              {/* 分享按钮：位置固定 */}
               <IconButton
                 variant="ghost"
                 size="md"
@@ -181,7 +183,6 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
                 }}
               />
               
-              {/* 下载按钮占位区：固定宽度确保分享按钮在左侧对齐 */}
               <Box w="40px" display="flex" justifyContent="center">
                 <Show when={!props.obj.is_dir}>
                   <IconButton
