@@ -5,7 +5,7 @@ import {
   ProgressIndicator,
   ProgressLabel,
   Text,
-  IconButton, // [修改] 引入按钮组件
+  IconButton, // [修改]
 } from "@hope-ui/solid"
 import { Motion } from "solid-motionone"
 import { useContextMenu } from "solid-contextmenu"
@@ -33,7 +33,7 @@ import {
 } from "~/utils"
 import { getIconByObj } from "~/utils/icon"
 import { ItemCheckbox, useSelectWithMouse } from "./helper"
-import { operations } from "../toolbar/operations" // [修改] 引入操作配置
+import { operations } from "../toolbar/operations" // [修改]
 
 export interface Col {
   name: OrderBy
@@ -42,9 +42,9 @@ export interface Col {
 }
 
 export const cols: Col[] = [
-  { name: "name", textAlign: "left", w: { "@initial": "76%", "@md": "65%" } },
-  { name: "size", textAlign: "right", w: { "@initial": "24%", "@md": "10%" } },
-  { name: "modified", textAlign: "right", w: { "@initial": 0, "@md": "25%" } },
+  { name: "name", textAlign: "left", w: { "@initial": "76%", "@md": "50%" } },
+  { name: "size", textAlign: "right", w: { "@initial": "24%", "@md": "17%" } },
+  { name: "modified", textAlign: "right", w: { "@initial": 0, "@md": "33%" } },
 ]
 
 export const ListItem = (props: { obj: StoreObj; index: number }) => {
@@ -68,7 +68,7 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
       }}
     >
       <HStack
-        role="group" // [修改] 用于触发子元素 hover 状态
+        role="group" // [修改]
         classList={{ selected: !!props.obj.selected }}
         class="list-item viselect-item"
         data-index={props.index}
@@ -92,7 +92,6 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
           to(pushHref(props.obj.name))
         }}
         on:click={(e: MouseEvent) => {
-          e.preventDefault()
           if (openWithDoubleClick()) return
           if (e.ctrlKey || e.metaKey || e.shiftKey) return
           if (!restoreSelectionCache()) return
@@ -110,7 +109,6 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
           show(e, { props: props.obj })
         }}
       >
-        {/* --- 名称列容器 --- */}
         <HStack class="name-box" spacing="$1" w={cols[0].w} flexShrink={0}>
           <Show when={checkboxOpen()}>
             <ItemCheckbox
@@ -140,7 +138,7 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
           />
           <Text
             class="name"
-            flex={1} // [修改] 占据名称列除图标和按钮外的剩余所有空间
+            flex={1}
             css={{
               wordBreak: "break-all",
               whiteSpace: filenameStyle() === "multi_line" ? "unset" : "nowrap",
@@ -154,48 +152,46 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
             {props.obj.name}
           </Text>
 
-          {/* [修改] 悬浮按钮：固定在名称列右侧对齐 */}
+          {/* [修改] 悬浮按钮容器 */}
           <HStack
-            spacing="$0_5"
+            spacing="$1"
             opacity={0}
             _groupHover={{ opacity: 1 }}
             transition="opacity 0.2s"
-            flexShrink={0} // 防止按钮被压缩
-            onClick={(e: MouseEvent) => e.stopPropagation()}
+            flexShrink={0}
           >
             <IconButton
               variant="ghost"
               size="md"
-              compact
               aria-label="share"
-              icon={<Icon as={operations["share"].icon} color={operations["share"].color} />}
-              onClick={() => {
-                selectIndex(props.index, true, true)
-                bus.emit("tool", "share")
+              icon={<Icon as={operations["share"].icon} color={operations["share"].color} boxSize="$5" />}
+              // 关键：在按钮级别再次强制阻止事件冒泡和默认行为
+              on:click={(e: MouseEvent) => {
+                e.preventDefault();
+                e.stopPropagation();
+                selectIndex(props.index, true, true);
+                bus.emit("tool", "share");
               }}
             />
             <IconButton
               variant="ghost"
               size="md"
-              compact
               aria-label="download"
-              icon={<Icon as={operations["download"].icon} color={operations["download"].color} />}
-              onClick={() => {
-                selectIndex(props.index, true, true)
-                bus.emit("tool", "download")
+              icon={<Icon as={operations["download"].icon} color={operations["download"].color} boxSize="$5" />}
+              on:click={(e: MouseEvent) => {
+                e.preventDefault();
+                e.stopPropagation();
+                // 必须先选中该文件，下载功能才能识别到当前对象
+                selectIndex(props.index, true, true);
+                bus.emit("tool", "download");
               }}
             />
           </HStack>
         </HStack>
 
-        {/* --- 大小列 --- */}
         <Show
           fallback={
-            <Text
-              class="size"
-              w={cols[1].w}
-              textAlign={cols[1].textAlign as any}
-            >
+            <Text class="size" w={cols[1].w} textAlign={cols[1].textAlign as any}>
               {getFileSize(props.obj.size)}
             </Text>
           }
@@ -203,11 +199,7 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
         >
           <Show
             fallback={
-              <Text
-                class="size"
-                w={cols[1].w}
-                textAlign={cols[1].textAlign as any}
-              >
+              <Text class="size" w={cols[1].w} textAlign={cols[1].textAlign as any}>
                 {toReadableUsage(props.obj.mount_details!)}
               </Text>
             }
@@ -231,8 +223,6 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
             </Progress>
           </Show>
         </Show>
-
-        {/* --- 修改时间列 --- */}
         <Text
           class="modified"
           display={{ "@initial": "none", "@md": "inline" }}
