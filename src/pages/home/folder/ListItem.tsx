@@ -5,6 +5,7 @@ import {
   ProgressIndicator,
   ProgressLabel,
   Text,
+  IconButton, // [修改] 引入按钮组件
 } from "@hope-ui/solid"
 import { Motion } from "solid-motionone"
 import { useContextMenu } from "solid-contextmenu"
@@ -32,6 +33,7 @@ import {
 } from "~/utils"
 import { getIconByObj } from "~/utils/icon"
 import { ItemCheckbox, useSelectWithMouse } from "./helper"
+import { operations } from "../toolbar/operations" // [修改] 引入操作配置
 
 export interface Col {
   name: OrderBy
@@ -40,9 +42,9 @@ export interface Col {
 }
 
 export const cols: Col[] = [
-  { name: "name", textAlign: "left", w: { "@initial": "76%", "@md": "50%" } },
-  { name: "size", textAlign: "right", w: { "@initial": "24%", "@md": "17%" } },
-  { name: "modified", textAlign: "right", w: { "@initial": 0, "@md": "33%" } },
+  { name: "name", textAlign: "left", w: { "@initial": "76%", "@md": "65%" } },
+  { name: "size", textAlign: "right", w: { "@initial": "24%", "@md": "10%" } },
+  { name: "modified", textAlign: "right", w: { "@initial": 0, "@md": "25%" } },
 ]
 
 export const ListItem = (props: { obj: StoreObj; index: number }) => {
@@ -66,6 +68,7 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
       }}
     >
       <HStack
+        role="group" // [修改] 用于触发子元素 hover 状态
         classList={{ selected: !!props.obj.selected }}
         class="list-item viselect-item"
         data-index={props.index}
@@ -102,24 +105,17 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
         }}
         onContextMenu={(e: MouseEvent) => {
           batch(() => {
-            // if (!checkboxOpen()) {
-            //   toggleCheckbox();
-            // }
             selectIndex(props.index, true, true)
           })
           show(e, { props: props.obj })
         }}
       >
-        <HStack class="name-box" spacing="$1" w={cols[0].w}>
+        {/* --- 名称列容器 --- */}
+        <HStack class="name-box" spacing="$1" w={cols[0].w} flexShrink={0}>
           <Show when={checkboxOpen()}>
             <ItemCheckbox
-              // colorScheme="neutral"
-              on:mousedown={(e: MouseEvent) => {
-                e.stopPropagation()
-              }}
-              on:click={(e: MouseEvent) => {
-                e.stopPropagation()
-              }}
+              on:mousedown={(e: MouseEvent) => e.stopPropagation()}
+              on:click={(e: MouseEvent) => e.stopPropagation()}
               checked={props.obj.selected}
               onChange={(e: any) => {
                 selectIndex(props.index, e.target.checked)
@@ -144,24 +140,55 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
           />
           <Text
             class="name"
+            flex={1} // [修改] 占据名称列除图标和按钮外的剩余所有空间
             css={{
               wordBreak: "break-all",
               whiteSpace: filenameStyle() === "multi_line" ? "unset" : "nowrap",
-              "overflow-x":
-                filenameStyle() === "scrollable" ? "auto" : "hidden",
-              textOverflow:
-                filenameStyle() === "ellipsis" ? "ellipsis" : "unset",
-              "scrollbar-width": "none", // firefox
-              "&::-webkit-scrollbar": {
-                // webkit
-                display: "none",
-              },
+              "overflow-x": filenameStyle() === "scrollable" ? "auto" : "hidden",
+              textOverflow: filenameStyle() === "ellipsis" ? "ellipsis" : "unset",
+              "scrollbar-width": "none",
+              "&::-webkit-scrollbar": { display: "none" },
             }}
             title={props.obj.name}
           >
             {props.obj.name}
           </Text>
+
+          {/* [修改] 悬浮按钮：固定在名称列右侧对齐 */}
+          <HStack
+            spacing="$0_5"
+            opacity={0}
+            _groupHover={{ opacity: 1 }}
+            transition="opacity 0.2s"
+            flexShrink={0} // 防止按钮被压缩
+            onClick={(e: MouseEvent) => e.stopPropagation()}
+          >
+            <IconButton
+              variant="ghost"
+              size="sm"
+              compact
+              aria-label="share"
+              icon={<Icon as={operations["share"].icon} color={operations["share"].color} />}
+              onClick={() => {
+                selectIndex(props.index, true, true)
+                bus.emit("tool", "share")
+              }}
+            />
+            <IconButton
+              variant="ghost"
+              size="sm"
+              compact
+              aria-label="download"
+              icon={<Icon as={operations["download"].icon} color={operations["download"].color} />}
+              onClick={() => {
+                selectIndex(props.index, true, true)
+                bus.emit("tool", "download")
+              }}
+            />
+          </HStack>
         </HStack>
+
+        {/* --- 大小列 --- */}
         <Show
           fallback={
             <Text
@@ -195,9 +222,7 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
               value={usedPercentage(props.obj.mount_details!)}
             >
               <ProgressIndicator
-                color={
-                  nearlyFull(props.obj.mount_details!) ? "$danger6" : "$info6"
-                }
+                color={nearlyFull(props.obj.mount_details!) ? "$danger6" : "$info6"}
                 rounded="$md"
               />
               <ProgressLabel class="disk-usage-text">
@@ -206,6 +231,8 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
             </Progress>
           </Show>
         </Show>
+
+        {/* --- 修改时间列 --- */}
         <Text
           class="modified"
           display={{ "@initial": "none", "@md": "inline" }}
