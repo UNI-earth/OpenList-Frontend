@@ -102,7 +102,7 @@ export const Share = () => {
           fallback={
             <>
               <ModalBody>
-				<Textarea variant="filled" value={link()} readonly rows={3} />         //显示3行
+				<Textarea variant="filled" value={link()} readonly rows={3} />
               </ModalBody>
               <ModalFooter display="flex" gap="$2">
                 <Button
@@ -121,75 +121,6 @@ export const Share = () => {
           <Match when={link() === ""}>
             <ModalBody>
               <VStack spacing="$1" alignItems="flex-start">
-                <Text size="sm">{t("shares.remark")}</Text>
-                <Textarea
-                  size="sm"
-                  value={share.remark}
-                  onInput={(e) => {
-                    setShare("remark", e.currentTarget.value)
-                  }}
-                />
-                <Text size="sm">{t("shares.extract_folder")}</Text>
-                <Select
-                  size="sm"
-                  value={share.extract_folder}
-                  onChange={(e) => {
-                    setShare("extract_folder", e)
-                  }}
-                >
-                  <SelectOptions
-                    options={[
-                      {
-                        key: ExtractFolder.Front,
-                        label: t("shares.extract_folders.front"),
-                      },
-                      {
-                        key: ExtractFolder.Back,
-                        label: t("shares.extract_folders.back"),
-                      },
-                    ]}
-                  />
-                </Select>
-                <Text size="sm">{t("shares.order_by")}</Text>
-                <Select
-                  size="sm"
-                  value={share.order_by}
-                  onChange={(e) => {
-                    setShare("order_by", e)
-                  }}
-                >
-                  <SelectOptions
-                    options={[
-                      { key: OrderBy.Name, label: t("shares.order_bys.name") },
-                      { key: OrderBy.Size, label: t("shares.order_bys.size") },
-                      {
-                        key: OrderBy.Modified,
-                        label: t("shares.order_bys.modified"),
-                      },
-                    ]}
-                  />
-                </Select>
-                <Text size="sm">{t("shares.order_direction")}</Text>
-                <Select
-                  size="sm"
-                  value={share.order_direction}
-                  onChange={(e) => {
-                    setShare("order_direction", e)
-                  }}
-                >
-                  <SelectOptions
-                    options={[
-                      {
-                        key: OrderDirection.Asc,
-                        label: t("shares.order_directions.asc"),
-                      },
-                      {
-                        key: OrderDirection.Desc,
-                        label: t("shares.order_directions.desc"),
-                      },
-                    ]}
-                  />
-                </Select>
                 <Text size="sm">{t("shares.pwd")}</Text>
                 <HStack spacing="$1" w="$full">
                   <Input
@@ -246,14 +177,6 @@ export const Share = () => {
                   value={share.readme}
                   onInput={(e) => {
                     setShare("readme", e.currentTarget.value)
-                  }}
-                />
-                <Text size="sm">{t("shares.header")}</Text>
-                <Textarea
-                  size="sm"
-                  value={share.header}
-                  onInput={(e) => {
-                    setShare("header", e.currentTarget.value)
                   }}
                 />
               </VStack>
