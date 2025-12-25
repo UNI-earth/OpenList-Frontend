@@ -165,7 +165,7 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
           >
             <IconButton
               variant="ghost"
-              size="sm"
+              size="md"
               compact
               aria-label="share"
               icon={<Icon as={operations["share"].icon} color={operations["share"].color} />}
@@ -176,7 +176,7 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
             />
             <IconButton
               variant="ghost"
-              size="sm"
+              size="md"
               compact
               aria-label="download"
               icon={<Icon as={operations["download"].icon} color={operations["download"].color} />}
