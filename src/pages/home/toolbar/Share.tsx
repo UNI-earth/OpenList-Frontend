@@ -56,7 +56,7 @@ export const Share = () => {
         })
         setShare({
           files: paths,
-          expires: getExpireDate("+1d").toISOString(), // 默认1天
+          expires: null,
           pwd: "",
           max_accessed: 0,
           order_by: OrderBy.None,
@@ -102,19 +102,17 @@ export const Share = () => {
           fallback={
             <>
               <ModalBody>
-                <Textarea variant="filled" value={link()} readonly />
+				<Textarea variant="filled" value={link()} readonly rows={3} />         //显示3行
               </ModalBody>
               <ModalFooter display="flex" gap="$2">
                 <Button
                   colorScheme="primary"
                   onClick={() => {
-                    copy(link())
+                    copy(link());
+					onClose();
                   }}
                 >
-                  {t("shares.copy_msg")}
-                </Button>
-                <Button colorScheme="info" onClick={onClose}>
-                  {t("global.confirm")}
+                  复制后关闭
                 </Button>
               </ModalFooter>
             </>
@@ -123,6 +121,75 @@ export const Share = () => {
           <Match when={link() === ""}>
             <ModalBody>
               <VStack spacing="$1" alignItems="flex-start">
+                <Text size="sm">{t("shares.remark")}</Text>
+                <Textarea
+                  size="sm"
+                  value={share.remark}
+                  onInput={(e) => {
+                    setShare("remark", e.currentTarget.value)
+                  }}
+                />
+                <Text size="sm">{t("shares.extract_folder")}</Text>
+                <Select
+                  size="sm"
+                  value={share.extract_folder}
+                  onChange={(e) => {
+                    setShare("extract_folder", e)
+                  }}
+                >
+                  <SelectOptions
+                    options={[
+                      {
+                        key: ExtractFolder.Front,
+                        label: t("shares.extract_folders.front"),
+                      },
+                      {
+                        key: ExtractFolder.Back,
+                        label: t("shares.extract_folders.back"),
+                      },
+                    ]}
+                  />
+                </Select>
+                <Text size="sm">{t("shares.order_by")}</Text>
+                <Select
+                  size="sm"
+                  value={share.order_by}
+                  onChange={(e) => {
+                    setShare("order_by", e)
+                  }}
+                >
+                  <SelectOptions
+                    options={[
+                      { key: OrderBy.Name, label: t("shares.order_bys.name") },
+                      { key: OrderBy.Size, label: t("shares.order_bys.size") },
+                      {
+                        key: OrderBy.Modified,
+                        label: t("shares.order_bys.modified"),
+                      },
+                    ]}
+                  />
+                </Select>
+                <Text size="sm">{t("shares.order_direction")}</Text>
+                <Select
+                  size="sm"
+                  value={share.order_direction}
+                  onChange={(e) => {
+                    setShare("order_direction", e)
+                  }}
+                >
+                  <SelectOptions
+                    options={[
+                      {
+                        key: OrderDirection.Asc,
+                        label: t("shares.order_directions.asc"),
+                      },
+                      {
+                        key: OrderDirection.Desc,
+                        label: t("shares.order_directions.desc"),
+                      },
+                    ]}
+                  />
+                </Select>
                 <Text size="sm">{t("shares.pwd")}</Text>
                 <HStack spacing="$1" w="$full">
                   <Input
@@ -152,35 +219,41 @@ export const Share = () => {
                   }}
                 />
                 <Text size="sm">{t("shares.expires")}</Text>
-                <Select
+                <Input
                   size="sm"
-                  value="1d"
-                  onChange={(e) => {
-                    const v = e as string
-                    if (v === "never") {
+                  invalid={!expireValid()}
+                  value={expireString()}
+                  placeholder="yyyy-MM-dd HH:mm:ss or +1w1d1H1m1s1ms"
+                  onInput={(e) => {
+                    setExpireString(e.currentTarget.value)
+                    if (e.currentTarget.value === "") {
+                      setExpireValid(true)
                       setShare("expires", null)
+                      return
+                    }
+                    const date = getExpireDate(e.currentTarget.value)
+                    if (isNaN(date.getTime())) {
+                      setExpireValid(false)
                     } else {
-                      // 自动补 +，保持原有解析逻辑
-                      setShare("expires", getExpireDate("+" + v).toISOString())
+                      setExpireValid(true)
+                      setShare("expires", date.toISOString())
                     }
                   }}
-                >
-                  <SelectOptions
-                    options={[
-                      { key: "1d", label: "1天" },
-                      { key: "2d", label: "2 天" },
-                      { key: "1w", label: "1 周" },
-                      { key: "1M", label: "1 月" },
-                      { key: "never", label: "永不过期" },
-                    ]}
-                  />
-                </Select>
+                />
                 <Text size="sm">{t("shares.readme")}</Text>
                 <Textarea
                   size="sm"
                   value={share.readme}
                   onInput={(e) => {
                     setShare("readme", e.currentTarget.value)
+                  }}
+                />
+                <Text size="sm">{t("shares.header")}</Text>
+                <Textarea
+                  size="sm"
+                  value={share.header}
+                  onInput={(e) => {
+                    setShare("header", e.currentTarget.value)
                   }}
                 />
               </VStack>
