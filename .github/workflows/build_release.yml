@@ -1,27 +1,95 @@
-- name: Build frontend
-  run: pnpm build
+name: Build OpenList Frontend Release (Fork Safe)
 
-- name: Package dist
-  run: |
-    rm -f openlist-frontend-dist.tar.gz
-    tar -czf openlist-frontend-dist.tar.gz dist
-    mkdir -p release
-    mv openlist-frontend-dist.tar.gz release/
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Frontend version (e.g. 4.1.8)"
+        required: true
+        type: string
 
-- name: Build lite frontend
-  run: pnpm build:lite
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-- name: Package lite dist
-  run: |
-    rm -f openlist-frontend-dist-lite.tar.gz
-    tar -czf openlist-frontend-dist-lite.tar.gz dist
-    mkdir -p lite-release
-    mv openlist-frontend-dist-lite.tar.gz lite-release/
+    steps:
+      # 1️⃣ 拉取代码
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-- name: Upload artifacts
-  uses: actions/upload-artifact@v4
-  with:
-    name: openlist-frontend-${{ inputs.version }}
-    path: |
-      release/openlist-frontend-dist.tar.gz
-      lite-release/openlist-frontend-dist-lite.tar.gz
+      # 2️⃣ Node 环境
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # 3️⃣ pnpm
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      # 4️⃣ 安装依赖
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # 5️⃣ 写入版本号（仅用于前端显示 / 标识）
+      - name: Set frontend version
+        run: |
+          jq --arg version "${{ inputs.version }}" \
+            '.version = $version' package.json > package.json.tmp
+          mv package.json.tmp package.json
+
+      # ======================
+      # Standard Build
+      # ======================
+      - name: Build standard frontend
+        run: pnpm build
+
+      - name: Package standard dist
+        run: |
+          # dist/ 是 pnpm build 的输出目录
+          test -f dist/index.html
+
+          rm -f openlist-frontend-dist.tar.gz
+          tar -czf openlist-frontend-dist.tar.gz dist
+
+          mkdir -p release
+          mv openlist-frontend-dist.tar.gz release/
+
+      # ======================
+      # Lite Build
+      # ======================
+      - name: Build lite frontend
+        run: pnpm build:lite
+
+      - name: Package lite dist
+        run: |
+          test -f dist/index.html
+
+          rm -f openlist-frontend-dist-lite.tar.gz
+          tar -czf openlist-frontend-dist-lite.tar.gz dist
+
+          mkdir -p lite-release
+          mv openlist-frontend-dist-lite.tar.gz lite-release/
+
+      # ======================
+      # 校验 tar 结构（防止后端 404）
+      # ======================
+      - name: Verify tar structure
+        run: |
+          echo "=== standard ==="
+          tar -tzf release/openlist-frontend-dist.tar.gz | head -20
+          echo "=== lite ==="
+          tar -tzf lite-release/openlist-frontend-dist-lite.tar.gz | head -20
+
+      # ======================
+      # 上传产物
+      # ======================
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: openlist-frontend-${{ inputs.version }}
+          path: |
+            release/openlist-frontend-dist.tar.gz
+            lite-release/openlist-frontend-dist-lite.tar.gz
