@@ -40,8 +40,10 @@ jobs:
 
       - name: Package dist
         run: |
-          mkdir -p dist
-          tar -czf dist/openlist-frontend-dist.tar.gz dist/
+          rm -f openlist-frontend-dist.tar.gz
+          tar -czf openlist-frontend-dist.tar.gz dist
+          mkdir -p release
+          mv openlist-frontend-dist.tar.gz release/
 
       # ===== Lite 版 =====
       - name: Build lite frontend
@@ -49,8 +51,10 @@ jobs:
 
       - name: Package lite dist
         run: |
-          mkdir -p lite-dist
-          tar -czf lite-dist/openlist-frontend-dist-lite.tar.gz dist/
+          rm -f openlist-frontend-dist-lite.tar.gz
+          tar -czf openlist-frontend-dist-lite.tar.gz dist
+          mkdir -p lite-release
+          mv openlist-frontend-dist-lite.tar.gz lite-release/
 
       # ===== 上传产物 =====
       - name: Upload artifacts
