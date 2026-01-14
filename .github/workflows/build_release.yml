@@ -1,39 +1,49 @@
-name: Build OpenList Frontend Release (Fork Safe)
+name: Build & Release OpenList Frontend
 
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Frontend version (e.g. 4.1.8)"
+        description: "Frontend version (e.g. 4.1.9)"
         required: true
         type: string
 
 jobs:
-  build:
+  build-release:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write   # 必须，否则不能创建 release
+
     steps:
-      # 1️⃣ 拉取代码
+      # ======================
+      # Checkout
+      # ======================
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2️⃣ Node 环境
+      # ======================
+      # Node & pnpm
+      # ======================
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "22"
 
-      # 3️⃣ pnpm
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           run_install: false
 
-      # 4️⃣ 安装依赖
+      # ======================
+      # Install deps
+      # ======================
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # 5️⃣ 写入版本号（仅用于前端显示 / 标识）
+      # ======================
+      # Set frontend version
+      # ======================
       - name: Set frontend version
         run: |
           jq --arg version "${{ inputs.version }}" \
@@ -41,55 +51,70 @@ jobs:
           mv package.json.tmp package.json
 
       # ======================
-      # Standard Build
+      # Build standard
       # ======================
       - name: Build standard frontend
         run: pnpm build
 
       - name: Package standard dist
         run: |
-          # dist/ 是 pnpm build 的输出目录
+          VERSION="${{ inputs.version }}"
+          TAR="openlist-frontend-dist-v${VERSION}.tar.gz"
+
           test -f dist/index.html
 
-          rm -f openlist-frontend-dist.tar.gz
-          tar -czf openlist-frontend-dist.tar.gz dist
+          rm -f "$TAR"
+          tar -czf "$TAR" dist
 
           mkdir -p release
-          mv openlist-frontend-dist.tar.gz release/
+          mv "$TAR" release/
 
       # ======================
-      # Lite Build
+      # Build lite
       # ======================
       - name: Build lite frontend
         run: pnpm build:lite
 
       - name: Package lite dist
         run: |
+          VERSION="${{ inputs.version }}"
+          TAR="openlist-frontend-dist-lite-v${VERSION}.tar.gz"
+
           test -f dist/index.html
 
-          rm -f openlist-frontend-dist-lite.tar.gz
-          tar -czf openlist-frontend-dist-lite.tar.gz dist
+          rm -f "$TAR"
+          tar -czf "$TAR" dist
 
           mkdir -p lite-release
-          mv openlist-frontend-dist-lite.tar.gz lite-release/
+          mv "$TAR" lite-release/
 
       # ======================
-      # 校验 tar 结构（防止后端 404）
+      # Verify structure
       # ======================
       - name: Verify tar structure
         run: |
           echo "=== standard ==="
-          tar -tzf release/openlist-frontend-dist.tar.gz | head -20
+          tar -tzf release/openlist-frontend-dist-v${{ inputs.version }}.tar.gz | head -20
           echo "=== lite ==="
-          tar -tzf lite-release/openlist-frontend-dist-lite.tar.gz | head -20
+          tar -tzf lite-release/openlist-frontend-dist-lite-v${{ inputs.version }}.tar.gz | head -20
 
       # ======================
-      # 上传产物
+      # Create GitHub Release
       # ======================
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: openlist-frontend-${{ inputs.version }}
-          path: |
-            release/openlist-frontend-dist.tar.gz
-            lite-release/openlist-frontend-dist-lite.tar.gz
+          tag_name: v${{ inputs.version }}
+          name: v${{ inputs.version }}
+          body: |
+            Custom OpenList Frontend v${{ inputs.version }}
+
+            - Standard frontend
+            - Lite frontend
+
+            Compatible with OpenList backend build.sh
+          files: |
+            release/openlist-frontend-dist-v${{ inputs.version }}.tar.gz
+            lite-release/openlist-frontend-dist-lite-v${{ inputs.version }}.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
