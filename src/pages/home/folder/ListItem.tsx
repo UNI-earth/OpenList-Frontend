@@ -12,7 +12,7 @@ import { Motion } from "solid-motionone"
 import { useContextMenu } from "solid-contextmenu"
 import { batch, Show } from "solid-js"
 import { LinkWithPush } from "~/components"
-import { useDownload, usePath, useRouter, useUtil } from "~/hooks"
+import { useDownload, usePath, useLink, useRouter, useUtil } from "~/hooks"
 import {
   checkboxOpen,
   getMainColor,
@@ -57,6 +57,7 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
   const { show } = useContextMenu({ id: 1 })
   const { pushHref, to } = useRouter()
   const { batchDownloadSelected } = useDownload() 
+  const { rawLink } = useLink()
   const { openWithDoubleClick, toggleWithClick, restoreSelectionCache } =
     useSelectWithMouse()
   const filenameStyle = () => local["list_item_filename_overflow"]
@@ -194,8 +195,14 @@ export const ListItem = (props: { obj: StoreObj; index: number }) => {
                     on:click={(e: MouseEvent) => {
                       e.preventDefault()
                       e.stopPropagation()
-                      batch(() => { selectIndex(props.index, true, true) })
-                      batchDownloadSelected()
+                      const url = rawLink(props.obj, true) 
+                      const a = document.createElement("a")
+                      a.href = url
+                      a.target = "_blank"
+                      a.rel = "noopener noreferrer"
+                      document.body.appendChild(a)
+                      a.click()
+                      document.body.removeChild(a)
                     }}
                   />
                 </Show>
