@@ -83,21 +83,6 @@ export const ContextMenu = () => {
       >
         <ItemContent name="decompress" />
       </Item>
-      
-      {/* 注释掉 "copy_link" 菜单项 */}
-      {/* <Show when={oneChecked()}>
-        <Item
-          onClick={({ props }) => {
-            if (props.is_dir) {
-              copySelectedPreviewPage()
-            } else {
-              copySelectedRawLink(true)
-            }
-          }}
-        >
-          <ItemContent name="copy_link" />
-        </Item>
-      </Show> */}
 
       <Item
         onClick={({ props }) => {
@@ -108,7 +93,8 @@ export const ContextMenu = () => {
             }
             bus.emit("tool", "package_download")
           } else {
-            batchDownloadSelected()
+            const url = rawLink(props, true)
+			window.open(url, "_blank")
           }
         }}
       >
